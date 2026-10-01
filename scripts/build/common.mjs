@@ -56,7 +56,9 @@ if (!IS_COMPANION_TEST && process.argv.includes("--companion-test"))
     console.error("--companion-test must be run with --reporter for any effect");
 
 export const IS_UPDATER_DISABLED = process.argv.includes("--disable-updater");
-export const SERVER_URL = (process.env.SNORECLIENT_SERVER_URL || "https://snore.example.com").replace(/\/+$/, "");
+// Your VPS. Change this one line (or set SNORECLIENT_SERVER_URL / a root .env) and every build points at it.
+export const DEFAULT_SERVER_URL = "https://snore.yourdomain.com";
+export const SERVER_URL = (process.env.SNORECLIENT_SERVER_URL || DEFAULT_SERVER_URL).replace(/\/+$/, "");
 export const gitHash = process.env.SNORECLIENT_HASH || execSync("git rev-parse HEAD", { encoding: "utf-8" }).trim();
 
 export const banner = {

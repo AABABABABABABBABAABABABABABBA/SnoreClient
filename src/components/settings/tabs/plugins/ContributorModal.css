@@ -1,65 +1,179 @@
-.vc-author-modal-root {
+.vc-dev-card-root {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
     padding: 0 0 16px;
 }
 
-.vc-author-modal-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
-}
-
-.vc-author-modal-name {
-    text-transform: none;
-    margin: 0;
-    flex-grow: 0;
-    background: var(--background-base-lowest);
-    border-radius: 0 9999px 9999px 0;
-    padding: 6px 0.8em 6px 0.5em;
-    font-size: 20px;
-    line-height: 1;
+.vc-dev-card-banner {
     position: relative;
-    text-wrap: nowrap;
+    height: 110px;
+    margin: 0 -16px;
+    overflow: hidden;
+    background:
+        radial-gradient(500px 180px at 10% 0%, color-mix(in srgb, var(--snore-accent) 55%, transparent), transparent 70%),
+        linear-gradient(135deg, #2b2250, #120f23);
 }
 
-.vc-author-modal-name::before {
-    content: "";
-    display: block;
+.vc-dev-card-banner-logo {
     position: absolute;
-    height: 100%;
-    width: 32px;
-    background: var(--background-base-lowest);
-    z-index: -1;
-    left: -32px;
-    top: 0;
-    border-top-left-radius: 9999px;
-    border-bottom-left-radius: 9999px;
+    right: -12px;
+    bottom: -40px;
+    opacity: 0.25;
+    transform: rotate(-12deg);
 }
 
-.vc-author-modal-avatar {
-    flex-shrink: 0;
-    transform: translateX(4px);
-    position: relative;
-    z-index: 2;
-    height: 32px;
-    width: 32px;
-    border-radius: 50%;
-    border: 2px solid var(--background-primary);
-    box-shadow:
-        0 0 0 1px rgb(255 255 255 / 18%),
-        0 2px 6px rgb(0 0 0 / 35%);
-}
-
-.vc-author-modal-links {
+.vc-dev-card-head {
     display: flex;
-    gap: 4px;
-    margin-left: auto;
-    width: 100%;
-    justify-content: flex-end;
+    align-items: flex-end;
+    gap: 16px;
+    margin-top: -48px;
+    padding: 0 4px;
+    flex-wrap: wrap;
 }
 
-.vc-author-modal-plugins {
+.vc-dev-card-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    border: 4px solid var(--background-base-lowest, var(--background-primary));
+    background: var(--background-base-lowest);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+    flex-shrink: 0;
+}
+
+.vc-dev-card-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding-bottom: 4px;
+}
+
+.vc-dev-card-name {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-default);
+    line-height: 1.15;
+}
+
+.vc-dev-card-handle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.vc-dev-card-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.vc-dev-card-chip {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-default);
+    background: var(--background-base-lower);
+}
+
+.vc-dev-card-chip-snore {
+    border-color: color-mix(in srgb, var(--snore-accent) 60%, transparent);
+    background: color-mix(in srgb, var(--snore-accent) 18%, transparent);
+}
+
+.vc-dev-card-chip-vencord {
+    border-color: color-mix(in srgb, #ed87a9 60%, transparent);
+    background: color-mix(in srgb, #ed87a9 18%, transparent);
+}
+
+.vc-dev-card-chip-donor {
+    border-color: color-mix(in srgb, #edcc87 60%, transparent);
+    background: color-mix(in srgb, #edcc87 18%, transparent);
+}
+
+.vc-dev-card-links {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+    padding-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.vc-dev-card-links button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vc-dev-card-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.vc-dev-card-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background: var(--card-background-default);
+}
+
+.vc-dev-card-stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--snore-accent);
+    line-height: 1;
+}
+
+.vc-dev-card-stat-label {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.vc-dev-card-section-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.vc-dev-card-plugins {
     display: grid;
     gap: 0.5em;
-    margin-top: 0.75em;
+}
+
+.vc-dev-card-empty {
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px dashed var(--border-subtle);
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.vc-addon-author-link {
+    cursor: pointer;
+    color: var(--text-subtle);
+    border-bottom: 1px solid transparent;
+    transition: color 0.12s ease-out, border-color 0.12s ease-out;
+}
+
+.vc-addon-author-link:hover {
+    color: var(--snore-accent);
+    border-bottom-color: var(--snore-accent);
+}
+
+@media (width <= 600px) {
+    .vc-dev-card-stats {
+        grid-template-columns: 1fr;
+    }
 }

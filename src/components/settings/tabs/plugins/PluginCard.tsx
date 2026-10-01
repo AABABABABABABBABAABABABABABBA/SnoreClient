@@ -16,6 +16,7 @@ import { React, showToast, Toasts } from "@webpack/common";
 
 import { PluginMeta } from "~plugins";
 
+import { openDevCard } from "./ContributorModal";
 import { openPluginModal } from "./PluginModal";
 
 const logger = new Logger("PluginCard");
@@ -134,6 +135,14 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
             sourceBadge={sourceBadge}
             tooltip={tooltip}
             description={plugin.description}
+            author={plugin.authors.map((a, i) => (
+                <React.Fragment key={a.name}>
+                    {i > 0 && ", "}
+                    <span role="button" tabIndex={0} className="vc-addon-author-link" onClick={e => { e.stopPropagation(); openDevCard(a); }}>
+                        {a.name}
+                    </span>
+                </React.Fragment>
+            ))}
             isNew={isNew}
             enabled={isEnabled()}
             setEnabled={toggleEnabled}

@@ -27,7 +27,11 @@ function required(name) {
     return v;
 }
 
-const publicUrl = (process.env.PUBLIC_URL || `http://localhost:${process.env.PORT || 8080}`).replace(/\/+$/, "");
+const publicUrl = required("PUBLIC_URL").replace(/\/+$/, "");
+if (!/^https?:\/\//.test(publicUrl)) {
+    console.error("PUBLIC_URL must start with https:// (or http:// for an IP without TLS), e.g. https://snore.yourdomain.com");
+    process.exit(1);
+}
 
 export const config = {
     host: process.env.HOST || "0.0.0.0",

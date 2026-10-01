@@ -18,7 +18,7 @@ git clone https://github.com/aababababababbabaabababababba/SnoreClient
 cd SnoreClient
 pnpm install --frozen-lockfile
 
-# Point the build at your server (see "Self hosting" below). Defaults to https://snore.example.com
+# Point the build at your server (see "Self hosting" below). Default is the DEFAULT_SERVER_URL line in scripts/build/common.mjs, set it once to your VPS
 SNORECLIENT_SERVER_URL=https://snore.yourdomain.com pnpm build
 
 pnpm inject      # patches your Discord install (uses the Equilotl installer)
