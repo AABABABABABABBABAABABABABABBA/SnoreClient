@@ -19,7 +19,7 @@ cd SnoreClient
 pnpm install --frozen-lockfile
 
 # Point the build at your server (see "Self hosting" below). Default is the DEFAULT_SERVER_URL line in scripts/build/common.mjs, set it once to your VPS
-SNORECLIENT_SERVER_URL=https://snore.yourdomain.com pnpm build
+SNORECLIENT_SERVER_URL=https://snore.pw pnpm build
 
 pnpm inject      # patches your Discord install (uses the Equilotl installer)
 ```
@@ -41,7 +41,7 @@ Everything lives in [`server/`](./server). It is a single Node 22 process with a
 
 Full instructions are in [`server/README.md`](./server/README.md). The short version:
 
-1. Create a Discord application at <https://discord.com/developers/applications>, and under **OAuth2** add `https://snore.yourdomain.com/v1/oauth/callback` as a redirect.
+1. Create a Discord application at <https://discord.com/developers/applications>, and under **OAuth2** add `https://snore.pw/v1/oauth/callback` as a redirect.
 2. On the VPS:
 
    ```shell
@@ -52,7 +52,7 @@ Full instructions are in [`server/README.md`](./server/README.md). The short ver
    ```
 
    Prefer no Docker? `sudo bash deploy/install.sh` sets up a systemd service instead.
-3. Build the client with `SNORECLIENT_SERVER_URL=https://snore.yourdomain.com`, or paste that URL into the Cloud settings tab.
+3. Build the client with `SNORECLIENT_SERVER_URL=https://snore.pw`, or paste that URL into the Cloud settings tab.
 
 ## Releases
 

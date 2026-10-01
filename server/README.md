@@ -29,7 +29,7 @@ git clone https://github.com/aababababababbabaabababababba/SnoreClient /opt/snor
 cd /opt/snoreclient/server
 cp .env.example .env
 nano .env         # PUBLIC_URL, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET
-echo "SNORE_DOMAIN=snore.yourdomain.com" >> .env
+echo "SNORE_DOMAIN=snore.pw" >> .env
 docker compose up -d
 docker compose logs -f snoreclient
 ```
@@ -51,8 +51,8 @@ Then put a reverse proxy in front. For Caddy, copy `deploy/Caddyfile.bare` to `/
 
 ## 3. Connect the client
 
-- Build it against your server: `SNORECLIENT_SERVER_URL=https://snore.yourdomain.com pnpm build`
-- Or, inside Discord, open **Settings → SnoreClient → Cloud**, paste `https://snore.yourdomain.com/` into the backend field, and enable Cloud Integration. A Discord authorization popup appears, after which sync is live.
+- Build it against your server: `SNORECLIENT_SERVER_URL=https://snore.pw pnpm build`
+- Or, inside Discord, open **Settings → SnoreClient → Cloud**, paste `https://snore.pw/` into the backend field, and enable Cloud Integration. A Discord authorization popup appears, after which sync is live.
 
 ## Configuration
 

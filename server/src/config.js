@@ -29,7 +29,7 @@ function required(name) {
 
 const publicUrl = required("PUBLIC_URL").replace(/\/+$/, "");
 if (!/^https?:\/\//.test(publicUrl)) {
-    console.error("PUBLIC_URL must start with https:// (or http:// for an IP without TLS), e.g. https://snore.yourdomain.com");
+    console.error("PUBLIC_URL must start with https:// (or http:// for an IP without TLS), e.g. https://snore.pw");
     process.exit(1);
 }
 
