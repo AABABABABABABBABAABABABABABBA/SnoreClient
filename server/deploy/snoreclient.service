@@ -1,0 +1,22 @@
+[Unit]
+Description=SnoreClient cloud server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=snoreclient
+Group=snoreclient
+WorkingDirectory=/opt/snoreclient/server
+EnvironmentFile=/opt/snoreclient/server/.env
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/snoreclient/server/data
+
+[Install]
+WantedBy=multi-user.target

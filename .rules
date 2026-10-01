@@ -1,0 +1,21 @@
+# SnoreClient
+
+SnoreClient is a fork of Equicord (which forks Vencord). Keep upstream attribution: existing file headers stay as they are and new source files use the `Vencord, a Discord client mod` SPDX header.
+
+## Layout
+
+- `src/plugins` plugins inherited from Vencord, `src/snoreclientplugins` plugins inherited from Equicord. Aliases `@plugins/*` and `@snoreclientplugins/*`.
+- `server/` self hosted cloud sync + website. Plain Node 22 ESM, no dependencies, tests in `server/test`.
+- Build time constant `SNORE_SERVER_URL` (from env `SNORECLIENT_SERVER_URL`) is the server a build points at. Use it instead of hard coding hostnames.
+
+## Checks
+
+`pnpm testTsc`, `pnpm lint`, `pnpm lint-styles`, `pnpm lint:patches`, `pnpm build`. For the server: `cd server && npm test`.
+The build needs a git commit, or `SNORECLIENT_HASH` and `SNORECLIENT_REMOTE` set.
+
+## Style
+
+- Smallest diff that solves the problem. No refactors unless asked. No comments unless asked.
+- TypeScript `strict`. No `any`, no `@ts-ignore`, no non-null `!`, no `enum`, no `../../` where an alias exists.
+- Reuse components from `@components/*` and `@webpack/common` before writing new ones.
+- Settings UI styling goes through `src/components/settings/snore-theme.css`; the accent is `--snore-accent`.

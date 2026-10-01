@@ -1,0 +1,5 @@
+# Caddyfile for a bare metal install (no docker). Replace the domain.
+snore.example.com {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:8080
+}

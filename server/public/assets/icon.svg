@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2b2250"/>
+      <stop offset="1" stop-color="#120f23"/>
+    </linearGradient>
+    <linearGradient id="moon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c4b5fd"/>
+      <stop offset="1" stop-color="#8b7cf6"/>
+    </linearGradient>
+    <linearGradient id="z" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fdf4ff"/>
+      <stop offset="1" stop-color="#d8c7ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
+  <circle cx="60" cy="52" r="3" fill="#e9d5ff" opacity=".8"/>
+  <circle cx="200" cy="40" r="2" fill="#e9d5ff" opacity=".6"/>
+  <circle cx="44" cy="190" r="2.5" fill="#e9d5ff" opacity=".5"/>
+  <circle cx="214" cy="206" r="3" fill="#e9d5ff" opacity=".7"/>
+  <path d="M112 44c-38 8-62 40-62 78 0 46 36 82 82 82 30 0 56-16 70-40-10 5-21 7-32 7-45 0-82-37-82-82 0-16 5-31 13-44 4-1 7-1 11-1z" fill="url(#moon)"/>
+  <text x="150" y="112" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-weight="800" font-size="52" fill="url(#z)" text-anchor="middle">Z</text>
+  <text x="192" y="78" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-weight="800" font-size="36" fill="url(#z)" text-anchor="middle" opacity=".85">z</text>
+  <text x="222" y="52" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-weight="800" font-size="24" fill="url(#z)" text-anchor="middle" opacity=".65">z</text>
+</svg>

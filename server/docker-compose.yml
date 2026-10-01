@@ -1,0 +1,33 @@
+services:
+  snoreclient:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8080
+      DATA_DIR: /data
+      TRUST_PROXY: "1"
+    volumes:
+      - snore-data:/data
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Hostname only, e.g. snore.example.com (must match PUBLIC_URL)
+      SNORE_DOMAIN: ${SNORE_DOMAIN:?set SNORE_DOMAIN in .env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  snore-data:
+  caddy-data:
+  caddy-config:

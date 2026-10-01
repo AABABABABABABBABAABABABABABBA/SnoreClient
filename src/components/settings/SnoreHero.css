@@ -1,0 +1,91 @@
+.vc-snore-hero {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 20px 22px;
+    margin-top: 16px;
+    margin-bottom: 20px;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--snore-accent) 35%, var(--border-subtle));
+    background:
+        radial-gradient(600px 220px at 0% 0%, color-mix(in srgb, var(--snore-accent) 28%, transparent), transparent 70%),
+        linear-gradient(135deg, color-mix(in srgb, var(--snore-accent) 12%, var(--card-background-default)), var(--card-background-default));
+    color: var(--text-default);
+}
+
+.vc-snore-hero-logo {
+    flex-shrink: 0;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px color-mix(in srgb, var(--snore-accent) 40%, transparent);
+}
+
+.vc-snore-hero-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.vc-snore-hero-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    background: linear-gradient(90deg, var(--text-default), var(--snore-accent));
+    background-clip: text;
+    color: transparent;
+}
+
+.vc-snore-hero-tagline {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.vc-snore-hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.vc-snore-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    background: color-mix(in srgb, var(--background-base-lower) 70%, transparent);
+    color: var(--text-muted);
+    font-family: var(--font-code);
+}
+
+.vc-snore-badge-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--status-positive);
+    box-shadow: 0 0 8px var(--status-positive);
+}
+
+.vc-snore-badge-dot-off {
+    background: var(--text-muted);
+    box-shadow: none;
+}
+
+.vc-snore-hero-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+@media (width <= 760px) {
+    .vc-snore-hero-actions {
+        display: none;
+    }
+}

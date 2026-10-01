@@ -1,0 +1,16 @@
+{
+    "name": "snoreclient-server",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Self hosted cloud sync and web backend for SnoreClient",
+    "type": "module",
+    "license": "GPL-3.0-or-later",
+    "engines": {
+        "node": ">=22.13"
+    },
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "node --watch src/index.js",
+        "test": "node --test test/"
+    }
+}

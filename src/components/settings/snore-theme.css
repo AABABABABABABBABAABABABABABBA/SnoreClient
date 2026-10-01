@@ -1,0 +1,45 @@
+:root {
+    --snore-accent: #a78bfa;
+    --snore-accent-strong: #7c6cf6;
+}
+
+.vc-settings-tab .vc-addon-card {
+    border-radius: 12px;
+    border-color: color-mix(in srgb, var(--border-subtle) 80%, var(--snore-accent));
+}
+
+.vc-settings-tab .vc-addon-card:hover {
+    border-color: color-mix(in srgb, var(--snore-accent) 55%, var(--border-subtle));
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--snore-accent) 18%, transparent);
+    transform: translateY(-2px);
+}
+
+.vc-settings-tab .vc-settings-quickActions-card {
+    border-radius: 14px;
+}
+
+.vc-settings-tab .vc-settings-quickActions-pill {
+    border-radius: 10px;
+    border: 1px solid transparent;
+}
+
+.vc-settings-tab .vc-settings-quickActions-pill:hover {
+    border-color: color-mix(in srgb, var(--snore-accent) 50%, transparent);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--snore-accent) 20%, transparent);
+}
+
+.vc-settings-tab .vc-special-card {
+    border-radius: 16px;
+}
+
+.vc-settings-tab .vc-plugins-info-card,
+.vc-settings-tab .vc-settings-card {
+    border-radius: 12px;
+}
+
+.vc-settings-tab .vc-h1,
+.vc-settings-tab .vc-h2,
+.vc-settings-tab .vc-h3 {
+    letter-spacing: -0.01em;
+}
+
