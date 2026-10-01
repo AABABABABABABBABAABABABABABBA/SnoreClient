@@ -121,7 +121,7 @@ jobs:
             - name: Install llvm-mingw
               shell: pwsh
               run: |
-                  $version = "20250828"
+                  $version = "20260908"
                   $zip = "$env:RUNNER_TEMP\llvm-mingw.zip"
                   Invoke-WebRequest "https://github.com/mstorsjo/llvm-mingw/releases/download/$version/llvm-mingw-$version-ucrt-x86_64.zip" -OutFile $zip
                   Expand-Archive $zip -DestinationPath $env:RUNNER_TEMP
