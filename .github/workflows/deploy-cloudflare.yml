@@ -1,0 +1,41 @@
+name: Deploy Cloudflare Worker
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - "server/**"
+            - ".github/workflows/deploy-cloudflare.yml"
+    workflow_dispatch:
+
+jobs:
+    deploy:
+        name: Deploy to Cloudflare
+        runs-on: ubuntu-latest
+        if: ${{ vars.CLOUDFLARE_DEPLOY != 'false' }}
+        steps:
+            - uses: actions/checkout@v7
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Test worker
+              working-directory: server/cloudflare
+              run: node --test test/
+
+            - name: Apply D1 schema
+              uses: cloudflare/wrangler-action@v3
+              with:
+                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  workingDirectory: server/cloudflare
+                  command: d1 execute snoreclient --remote --file=schema.sql
+
+            - name: Deploy
+              uses: cloudflare/wrangler-action@v3
+              with:
+                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  workingDirectory: server/cloudflare
+                  command: deploy

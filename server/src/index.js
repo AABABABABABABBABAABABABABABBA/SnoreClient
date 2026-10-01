@@ -7,7 +7,9 @@ import { createServer } from "node:http";
 
 import { config } from "./config.js";
 import { corsHeaders, html, HttpError, json, rateLimited } from "./http.js";
-import { page } from "./pages.js";
+import { createPages } from "./pages.js";
+
+const { page } = createPages(config);
 import { cloudRoutes } from "./routes/cloud.js";
 import { siteRoutes } from "./routes/site.js";
 

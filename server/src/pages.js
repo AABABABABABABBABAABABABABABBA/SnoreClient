@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { config } from "./config.js";
-
 export function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[c]);
 }
 
+export function createPages(config) {
 const shell = (title, body, { wide = false } = {}) => `<!doctype html>
 <html lang="en">
 <head>
@@ -70,9 +69,9 @@ ${body}
 </body>
 </html>`;
 
-export const page = (title, body) => shell(`${title} · ${config.siteName}`, `<h1>${escapeHtml(title)}</h1>${body}`);
+const page = (title, body) => shell(`${title} · ${config.siteName}`, `<h1>${escapeHtml(title)}</h1>${body}`);
 
-export const landing = ({ userCount }) => shell(config.siteName, `
+const landing = ({ userCount }) => shell(config.siteName, `
 <span class="badge"><span class="dot"></span> cloud online · ${userCount} connected account${userCount === 1 ? "" : "s"}</span>
 <h1 style="margin-top:14px">Discord, but cozier.</h1>
 <p class="lead">${escapeHtml(config.siteName)} is a Discord client mod with hundreds of plugins, custom themes, and its own self hosted cloud so your settings follow you everywhere.</p>
@@ -92,7 +91,7 @@ export const landing = ({ userCount }) => shell(config.siteName, `
 <pre>${escapeHtml(config.publicUrl)}/</pre>
 </div>`);
 
-export const privacy = () => page("Privacy", `
+const privacy = () => page("Privacy", `
 <div class="card">
 <h2>What this server stores</h2>
 <p>When you connect through Discord OAuth, the server stores your Discord user id and username plus a random secret that your client uses to authenticate. No access tokens are kept. The token is revoked immediately after your profile is fetched.</p>
@@ -107,7 +106,7 @@ export const privacy = () => page("Privacy", `
 <p>The server logs request paths and status codes for troubleshooting. It does not log request bodies or authorization headers.</p>
 </div>`);
 
-export const download = () => page("Download", `
+const download = () => page("Download", `
 <div class="card">
 <h2>Desktop</h2>
 <p>Grab the latest build from GitHub, then run the installer or copy the <code>desktop.asar</code> into your Discord install using the instructions in the README.</p>
@@ -126,7 +125,7 @@ SNORECLIENT_SERVER_URL=${escapeHtml(config.publicUrl)} pnpm build
 pnpm inject</pre>
 </div>`);
 
-export const plugins = list => shell(`Plugins · ${config.siteName}`, `
+const plugins = list => shell(`Plugins · ${config.siteName}`, `
 <h1>Plugins</h1>
 <p class="lead">${list.length} plugins ship with ${escapeHtml(config.siteName)}. Search by name, description, or author.</p>
 <input type="search" id="q" placeholder="Search plugins…" autofocus>
@@ -145,7 +144,7 @@ const initial = new URLSearchParams(location.search).get("q"); if (initial) q.va
 render();
 </script>`, { wide: true });
 
-export const plugin = p => page(p.name, `
+const plugin = p => page(p.name, `
 <p class="lead">${escapeHtml(p.description)}</p>
 <div class="card">
 <h2>Authors</h2>
@@ -158,3 +157,6 @@ ${p.tags?.length ? `<h2>Tags</h2><div class="tags">${p.tags.map(t => `<span clas
 <p>Open <b>Settings → ${escapeHtml(config.siteName)} → Plugins</b> and search for <code>${escapeHtml(p.name)}</code>.</p>
 </div>
 <p><a href="/plugins">← All plugins</a></p>`);
+
+return { page, landing, privacy, download, plugins, plugin };
+}

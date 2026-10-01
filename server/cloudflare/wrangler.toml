@@ -1,0 +1,33 @@
+name = "snoreclient"
+main = "worker.js"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Serve the logo and other static files from ./public
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "snoreclient"
+# Fill in after: npx wrangler d1 create snoreclient
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+[vars]
+PUBLIC_URL = "https://snore.pw"
+DISCORD_CLIENT_ID = "REPLACE_WITH_YOUR_DISCORD_CLIENT_ID"
+GITHUB_REPO = "aababababababbabaabababababba/SnoreClient"
+SITE_NAME = "SnoreClient"
+# Comma separated Discord user ids to make the instance private. Empty = anyone can connect.
+ALLOWED_USER_IDS = ""
+MAX_BLOB_BYTES = "8388608"
+MAX_KEYS_PER_USER = "64"
+
+# Secrets (never put these in this file):
+#   npx wrangler secret put DISCORD_CLIENT_SECRET
+
+# Custom domain. Remove this block to use the *.workers.dev URL instead.
+[[routes]]
+pattern = "snore.pw"
+custom_domain = true

@@ -10,7 +10,9 @@ import { fileURLToPath } from "node:url";
 import { config } from "../config.js";
 import { users } from "../db.js";
 import { html, HttpError, json, redirect } from "../http.js";
-import * as pages from "../pages.js";
+import { createPages } from "../pages.js";
+
+const pages = createPages(config);
 
 const PUBLIC_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../../public");
 

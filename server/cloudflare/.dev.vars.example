@@ -1,0 +1,2 @@
+# Copy to .dev.vars for `wrangler dev`. In production use: npx wrangler secret put DISCORD_CLIENT_SECRET
+DISCORD_CLIENT_SECRET=

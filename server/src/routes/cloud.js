@@ -10,7 +10,9 @@ import { config } from "../config.js";
 import { dataV2, settingsV1, transaction, users } from "../db.js";
 import { exchangeCode, fetchUser, revokeToken } from "../discord.js";
 import { empty, html, HttpError, json, readBody, readJson } from "../http.js";
-import { escapeHtml, page } from "../pages.js";
+import { createPages, escapeHtml } from "../pages.js";
+
+const { page } = createPages(config);
 
 const KEY_RE = /^[A-Za-z0-9_./-]{1,128}$/;
 

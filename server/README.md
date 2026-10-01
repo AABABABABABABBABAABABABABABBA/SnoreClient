@@ -1,6 +1,8 @@
-# SnoreClient server
+# SnoreClient server (Node.js + SQLite)
 
-Self hosted backend for SnoreClient. One Node.js process, one SQLite file, zero npm dependencies.
+Self hosted backend for SnoreClient for a VPS. One Node.js process, one SQLite file, zero npm dependencies.
+
+> Prefer no server at all? The same backend runs on Cloudflare Workers with D1, see [`cloudflare/README.md`](./cloudflare/README.md).
 
 What it serves:
 

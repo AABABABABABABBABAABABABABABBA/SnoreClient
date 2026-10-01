@@ -35,24 +35,27 @@ Other useful commands:
 
 You can also change the cloud backend at any time inside Discord under **Settings → SnoreClient → Cloud**, so a build made with the default URL still works once you paste your server address there.
 
-## Self hosting the server
+## Hosting the backend
 
-Everything lives in [`server/`](./server). It is a single Node 22 process with an SQLite database and no npm dependencies. It implements the Vencord cloud API (`/v1/*`) and the newer keyed sync API (`/v2/*`) that the client speaks, plus a small website: landing page, plugin browser, download page and privacy page.
+Everything lives in [`server/`](./server). The backend implements the Vencord cloud API (`/v1/*`) and the keyed sync API (`/v2/*`) that the client speaks, plus a small website: landing page, plugin browser, download page and privacy page. Two interchangeable deployments are included:
 
-Full instructions are in [`server/README.md`](./server/README.md). The short version:
+| | Where | Guide |
+| --- | --- | --- |
+| **Cloudflare Workers + D1** (recommended) | Cloudflare free tier, no server | [`server/cloudflare/README.md`](./server/cloudflare/README.md) |
+| Node.js + SQLite | Any VPS with Docker or systemd | [`server/README.md`](./server/README.md) |
+
+The short version for Cloudflare:
 
 1. Create a Discord application at <https://discord.com/developers/applications>, and under **OAuth2** add `https://snore.pw/v1/oauth/callback` as a redirect.
-2. On the VPS:
-
-   ```shell
-   git clone https://github.com/aababababababbabaabababababba/SnoreClient /opt/snoreclient
-   cd /opt/snoreclient/server
-   cp .env.example .env     # fill in PUBLIC_URL, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, SNORE_DOMAIN
-   docker compose up -d     # Caddy fetches TLS certificates automatically
+2. ```shell
+   cd server/cloudflare
+   npm install && npx wrangler login
+   npm run db:create        # paste the printed database_id into wrangler.toml
+   npm run db:migrate
+   npm run secret           # DISCORD_CLIENT_SECRET
+   npm run deploy
    ```
-
-   Prefer no Docker? `sudo bash deploy/install.sh` sets up a systemd service instead.
-3. Build the client with `SNORECLIENT_SERVER_URL=https://snore.pw`, or paste that URL into the Cloud settings tab.
+3. Builds already default to `https://snore.pw`. For another domain, change `DEFAULT_SERVER_URL` in `scripts/build/common.mjs` or set `SNORECLIENT_SERVER_URL`, or paste the URL into the Cloud settings tab.
 
 ## Releases
 
@@ -64,7 +67,8 @@ The **Release** workflow uploads build artifacts to a GitHub release tagged `lat
 src/                     client source (plugins, API, settings UI)
 src/snoreclientplugins/  plugins that came from Equicord
 src/plugins/             plugins that came from Vencord
-server/                  self hosted cloud + website
+server/                  cloud backend + website (Node) 
+server/cloudflare/       the same backend as a Cloudflare Worker with D1
 browser/                 browser extension manifests and icon
 scripts/                 build and tooling
 ```
