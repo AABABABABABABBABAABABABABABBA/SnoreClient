@@ -342,6 +342,21 @@ route("GET", "/plugins/:name", async ({ cfg, pages, params }) => {
     if (!p) throw new HttpError(404, "No such plugin");
     return html(pages.plugin(p));
 });
+const releaseCache = { at: 0, data: null };
+async function latestRelease(cfg) {
+    if (Date.now() - releaseCache.at < 5 * 60_000 && releaseCache.data) return releaseCache.data;
+    const res = await fetch(`https://api.github.com/repos/${cfg.githubRepo}/releases/latest`, {
+        headers: { "User-Agent": "SnoreClient-Worker", Accept: "application/vnd.github+json" },
+        cf: { cacheTtl: 300 },
+    });
+    if (!res.ok) throw new HttpError(502, "GitHub release lookup failed");
+    releaseCache.data = await res.json();
+    releaseCache.at = Date.now();
+    return releaseCache.data;
+}
+route("GET", "/releases/client", async ({ cfg }) => json(await latestRelease(cfg), 200, { "Cache-Control": "public, max-age=300" }));
+route("GET", "/releases/installer", async ({ cfg }) => json(await latestRelease(cfg), 200, { "Cache-Control": "public, max-age=300" }));
+
 route("GET", "/release/:file", ({ cfg, params }) => {
     if (!/^[A-Za-z0-9_.-]+$/.test(params.file)) throw new HttpError(400, "Bad file name");
     return Response.redirect(`https://github.com/${cfg.githubRepo}/releases/latest/download/${params.file}`, 302);

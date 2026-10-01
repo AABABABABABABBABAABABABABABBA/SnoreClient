@@ -11,27 +11,27 @@
 
 ## Install
 
-**Windows:** download and run [`SnoreClientInstaller.exe`](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller.exe) ([ARM64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-arm64.exe)). It fetches the latest build and opens the installer window where you pick your Discord install. Windows SmartScreen may warn because the file is not code signed; choose "More info → Run anyway".
+| Platform | Download |
+| --- | --- |
+| **Windows** | [SnoreClientInstaller.exe](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller.exe) · [ARM64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-arm64.exe) · CLI: [x64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstallerCli.exe) [ARM64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstallerCli-arm64.exe) |
+| **Linux** | [SnoreClientInstaller-linux](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-linux) (X11 + Wayland) · [ARM64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-linux-arm64) · CLI: [x64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstallerCli-linux) [ARM64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstallerCli-linux-arm64) |
+| **macOS** | CLI: [Universal](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstallerCli-universal) · [Apple Silicon](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstallerCli-arm64) · [Intel](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstallerCli-x64) |
 
-**macOS:** [`SnoreClientInstaller-macos-arm64`](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-macos-arm64) (Apple Silicon) or [`-macos-x64`](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-macos-x64) (Intel), then `chmod +x` and run it from a terminal.
+The installer is SnoreClient's own build of the Equilotl installer: it downloads the latest SnoreClient from the GitHub release and patches the Discord install you pick. Windows SmartScreen may warn because the file is not code signed; choose "More info → Run anyway". CLI builds on Linux and macOS need `chmod +x` first.
 
-**Linux:** [`SnoreClientInstaller-linux`](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-linux) ([ARM64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-linux-arm64)), then `chmod +x` and run it.
-
-All installers accept `--uninstall`, `--repair` and `--cli` (terminal mode instead of the window).
-
-Prefer a script? **Windows** (PowerShell):
+One-liners that fetch and run the installer for you:
 
 ```powershell
+# Windows (PowerShell)
 irm https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/install.ps1 | iex
 ```
 
-**Linux / macOS**:
-
 ```shell
+# Linux / macOS
 bash -c "$(curl -fsSL https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/install.sh)"
 ```
 
-The script downloads the latest SnoreClient build from the `latest` GitHub release plus the Equilotl installer, then patches the Discord install you pick. Fully quit Discord afterwards and start it again. Pass `-Uninstall` (Windows) or `--uninstall` (Linux/macOS) to remove it. After that, updates arrive through **Settings → SnoreClient → Updater**.
+After installing, fully quit Discord (tray icon too) and start it again. Updates arrive through **Settings → SnoreClient → Updater**.
 
 **Browser:** download `extension-chrome.zip` or `extension-firefox.zip` from the [latest release](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest) and load it as an unpacked extension, or install `SnoreClient.user.js` in a userscript manager.
 
@@ -47,7 +47,7 @@ pnpm install --frozen-lockfile
 # Point the build at your server (see "Self hosting" below). Default is the DEFAULT_SERVER_URL line in scripts/build/common.mjs, set it once to your VPS
 SNORECLIENT_SERVER_URL=https://snore.pw pnpm build
 
-pnpm inject      # patches your Discord install (uses the Equilotl installer)
+pnpm inject      # patches your Discord install with this build using the SnoreClient installer CLI
 ```
 
 Other useful commands:
@@ -95,6 +95,7 @@ src/snoreclientplugins/  plugins that came from Equicord
 src/plugins/             plugins that came from Vencord
 server/                  cloud backend + website (Node) 
 server/cloudflare/       the same backend as a Cloudflare Worker with D1
+installer/               SnoreClient installer (Equilotl fork, Go)
 browser/                 browser extension manifests and icon
 scripts/                 build and tooling
 ```

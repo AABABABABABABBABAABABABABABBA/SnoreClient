@@ -25,7 +25,7 @@ import { Readable } from "stream";
 import { finished } from "stream/promises";
 import { fileURLToPath } from "url";
 
-const BASE_URL = "https://github.com/Equicord/Equilotl/releases/latest/download/";
+const BASE_URL = "https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/";
 
 const BASE_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FILE_DIR = join(BASE_DIR, "dist", "Installer");
@@ -39,19 +39,19 @@ function getFilename() {
     switch (process.platform) {
         case "win32":
             return byArch({
-                arm64: "EquilotlCli-arm64.exe",
-                default: "EquilotlCli.exe"
+                arm64: "SnoreClientInstallerCli-arm64.exe",
+                default: "SnoreClientInstallerCli.exe"
             });
         case "darwin":
             return byArch({
-                x64: "EquilotlCli-x64",
-                arm64: "EquilotlCli-arm64",
-                default: "EquilotlCli-universal"
+                x64: "SnoreClientInstallerCli-x64",
+                arm64: "SnoreClientInstallerCli-arm64",
+                default: "SnoreClientInstallerCli-universal"
             });
         case "linux":
             return byArch({
-                arm64: "EquilotlCli-linux-arm64",
-                default: "EquilotlCli-Linux"
+                arm64: "SnoreClientInstallerCli-linux-arm64",
+                default: "SnoreClientInstallerCli-linux"
             });
         default:
             throw new Error("Unsupported platform: " + process.platform);
@@ -110,9 +110,9 @@ try {
         stdio: "inherit",
         env: {
             ...process.env,
-            EQUICORD_USER_DATA_DIR: BASE_DIR,
-            EQUICORD_DIRECTORY: join(BASE_DIR, "dist/desktop"),
-            EQUICORD_DEV_INSTALL: "1"
+            SNORECLIENT_USER_DATA_DIR: BASE_DIR,
+            SNORECLIENT_DIRECTORY: join(BASE_DIR, "dist/desktop"),
+            SNORECLIENT_DEV_INSTALL: "1"
         }
     });
 } catch {

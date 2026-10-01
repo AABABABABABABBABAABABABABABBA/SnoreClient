@@ -45,3 +45,6 @@ misc/scripts
 # local release bundles
 *-release.zip
 server/cloudflare/dist
+installer/out
+installer/vendor
+*.syso

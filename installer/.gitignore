@@ -1,0 +1,8 @@
+snoreinstaller
+vencord
+*.exe
+*.syso
+*.old
+vendor
+build
+.DS_Store

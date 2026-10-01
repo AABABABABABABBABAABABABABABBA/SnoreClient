@@ -55,6 +55,19 @@ async function loadPlugins() {
     return list;
 }
 
+const releaseCache = { at: 0, data: null };
+
+async function latestRelease() {
+    if (Date.now() - releaseCache.at < 5 * 60_000 && releaseCache.data) return releaseCache.data;
+    const res = await fetch(`https://api.github.com/repos/${config.githubRepo}/releases/latest`, {
+        headers: { "User-Agent": "SnoreClient-Server", Accept: "application/vnd.github+json" },
+    });
+    if (!res.ok) throw new HttpError(502, "GitHub release lookup failed");
+    releaseCache.data = await res.json();
+    releaseCache.at = Date.now();
+    return releaseCache.data;
+}
+
 export const siteRoutes = {
     "GET /": (req, res) => html(res, 200, pages.landing({ userCount: users.count() })),
     "GET /privacy": (req, res) => html(res, 200, pages.privacy()),
@@ -70,6 +83,9 @@ export const siteRoutes = {
         if (!p) throw new HttpError(404, "No such plugin");
         html(res, 200, pages.plugin(p));
     },
+
+    "GET /releases/client": async (req, res) => json(res, 200, await latestRelease(), { "Cache-Control": "public, max-age=300" }),
+    "GET /releases/installer": async (req, res) => json(res, 200, await latestRelease(), { "Cache-Control": "public, max-age=300" }),
 
     "GET /release/:file": (req, res, url, params) => {
         if (!/^[A-Za-z0-9_.-]+$/.test(params.file)) throw new HttpError(400, "Bad file name");

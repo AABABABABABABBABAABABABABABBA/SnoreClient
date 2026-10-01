@@ -1,0 +1,195 @@
+name: Installer
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - "installer/**"
+            - ".github/workflows/installer.yml"
+    workflow_dispatch:
+
+env:
+    FORCE_COLOR: true
+    GO_VERSION: "1.26.2"
+    LDFLAGS_BASE: -s -w -X 'snoreinstaller/buildinfo.InstallerTag=latest'
+
+permissions:
+    contents: write
+
+jobs:
+    linux:
+        name: Linux ${{ matrix.arch }}
+        runs-on: ${{ matrix.runner }}
+        strategy:
+            matrix:
+                include:
+                    - arch: amd64
+                      runner: ubuntu-latest
+                      suffix: ""
+                    - arch: arm64
+                      runner: ubuntu-24.04-arm
+                      suffix: "-arm64"
+        defaults:
+            run:
+                working-directory: installer
+        steps:
+            - uses: actions/checkout@v7
+
+            - uses: actions/setup-go@v5
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+                  cache-dependency-path: installer/go.sum
+
+            - name: Install Linux dependencies
+              run: |
+                  sudo apt update
+                  sudo apt install -y pkg-config libsdl2-dev libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libglx-dev libgl1-mesa-dev libxxf86vm-dev libglfw3-dev libwayland-dev libwayland-egl1 libegl-dev libxkbcommon-dev wayland-protocols extra-cmake-modules
+
+            - name: Vendor dependencies and apply Wayland patch
+              run: |
+                  go mod vendor
+                  git apply patches/wayland.patch
+
+            - name: Build
+              run: |
+                  HASH=$(git rev-parse --short HEAD)
+                  LD="$LDFLAGS_BASE -X 'snoreinstaller/buildinfo.InstallerGitHash=$HASH'"
+                  mkdir -p out
+                  CGO_ENABLED=1 GOARCH=${{ matrix.arch }} go build -tags static            -ldflags "$LD" -o out/SnoreClientInstaller-x11${{ matrix.suffix }} .
+                  CGO_ENABLED=1 GOARCH=${{ matrix.arch }} go build -tags "static wayland"  -ldflags "$LD" -o out/SnoreClientInstaller-wayland${{ matrix.suffix }} .
+                  CGO_ENABLED=1 GOARCH=${{ matrix.arch }} go build -tags "static combined" -ldflags "$LD" -o out/SnoreClientInstaller-linux${{ matrix.suffix }} .
+                  CGO_ENABLED=0 GOARCH=${{ matrix.arch }} go build -tags cli               -ldflags "$LD" -o out/SnoreClientInstallerCli-linux${{ matrix.suffix }} .
+                  chmod +x out/*
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: installer-linux-${{ matrix.arch }}
+                  path: installer/out/*
+
+    windows:
+        name: Windows x64
+        runs-on: windows-latest
+        defaults:
+            run:
+                working-directory: installer
+                shell: msys2 {0}
+        steps:
+            - uses: actions/checkout@v7
+
+            - uses: actions/setup-go@v5
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+                  cache-dependency-path: installer/go.sum
+
+            - uses: msys2/setup-msys2@v2
+              with:
+                  path-type: inherit
+
+            - name: Install Windows dependencies
+              run: pacman -S --noconfirm git mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2
+
+            - name: Build
+              run: |
+                  go install github.com/tc-hib/go-winres@v0.3.3
+                  "$(go env GOPATH)/bin/go-winres" make --product-version "1.0.0"
+                  HASH=$(git rev-parse --short HEAD)
+                  LD="$LDFLAGS_BASE -X 'snoreinstaller/buildinfo.InstallerGitHash=$HASH'"
+                  mkdir -p out
+                  CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -tags "static gui" -ldflags "$LD -H=windowsgui -extldflags=-static" -o out/SnoreClientInstaller.exe .
+                  CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -tags cli -ldflags "$LD" -o out/SnoreClientInstallerCli.exe .
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: installer-windows-amd64
+                  path: installer/out/*
+
+    windows-arm64:
+        name: Windows ARM64
+        runs-on: windows-latest
+        defaults:
+            run:
+                working-directory: installer
+                shell: bash
+        steps:
+            - uses: actions/checkout@v7
+
+            - uses: actions/setup-go@v5
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+                  cache-dependency-path: installer/go.sum
+
+            - name: Install llvm-mingw
+              shell: pwsh
+              run: |
+                  $version = "20250828"
+                  $zip = "$env:RUNNER_TEMP\llvm-mingw.zip"
+                  Invoke-WebRequest "https://github.com/mstorsjo/llvm-mingw/releases/download/$version/llvm-mingw-$version-ucrt-x86_64.zip" -OutFile $zip
+                  Expand-Archive $zip -DestinationPath $env:RUNNER_TEMP
+                  "$env:RUNNER_TEMP\llvm-mingw-$version-ucrt-x86_64\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+
+            - name: Build
+              run: |
+                  go install github.com/tc-hib/go-winres@v0.3.3
+                  "$(go env GOPATH)/bin/go-winres" make --arch arm64 --product-version "1.0.0"
+                  HASH=$(git rev-parse --short HEAD)
+                  LD="$LDFLAGS_BASE -X 'snoreinstaller/buildinfo.InstallerGitHash=$HASH'"
+                  mkdir -p out
+                  CGO_ENABLED=1 GOOS=windows GOARCH=arm64 CC=aarch64-w64-mingw32-clang CXX=aarch64-w64-mingw32-clang++ go build -tags "static gui" -ldflags "$LD -H=windowsgui -extldflags=-static" -o out/SnoreClientInstaller-arm64.exe .
+                  CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -tags cli -ldflags "$LD" -o out/SnoreClientInstallerCli-arm64.exe .
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: installer-windows-arm64
+                  path: installer/out/*
+
+    macos:
+        name: macOS CLI
+        runs-on: macos-latest
+        defaults:
+            run:
+                working-directory: installer
+        steps:
+            - uses: actions/checkout@v7
+
+            - uses: actions/setup-go@v5
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+                  cache-dependency-path: installer/go.sum
+
+            - name: Build
+              run: |
+                  HASH=$(git rev-parse --short HEAD)
+                  LD="$LDFLAGS_BASE -X 'snoreinstaller/buildinfo.InstallerGitHash=$HASH'"
+                  mkdir -p out
+                  CGO_ENABLED=0 GOARCH=amd64 go build -tags cli -ldflags "$LD" -o out/SnoreClientInstallerCli-x64 .
+                  CGO_ENABLED=0 GOARCH=arm64 go build -tags cli -ldflags "$LD" -o out/SnoreClientInstallerCli-arm64 .
+                  lipo -create -output out/SnoreClientInstallerCli-universal out/SnoreClientInstallerCli-x64 out/SnoreClientInstallerCli-arm64
+                  chmod +x out/*
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: installer-macos
+                  path: installer/out/*
+
+    publish:
+        name: Publish to the latest release
+        needs: [linux, windows, windows-arm64, macos]
+        runs-on: ubuntu-latest
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        steps:
+            - uses: actions/checkout@v7
+
+            - uses: actions/download-artifact@v4
+              with:
+                  path: out
+                  merge-multiple: true
+
+            - name: Upload
+              run: |
+                  gh release view latest >/dev/null 2>&1 || gh release create latest --title "SnoreClient latest" --notes "Rolling release." --latest
+                  for old in SnoreClientInstaller-macos-x64 SnoreClientInstaller-macos-arm64 SnoreClientInstaller-linux-arm64; do
+                    gh release delete-asset latest "$old" --yes 2>/dev/null || true
+                  done
+                  ls -la out
+                  gh release upload latest --clobber out/*
