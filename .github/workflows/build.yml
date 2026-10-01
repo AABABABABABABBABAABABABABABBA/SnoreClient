@@ -3,6 +3,7 @@ on:
     push:
         branches:
             - main
+    workflow_dispatch:
 
 env:
     FORCE_COLOR: true
@@ -64,6 +65,19 @@ jobs:
                   rm release/package.json
                   rm release/*.map
 
+            - name: Add installer scripts to the release
+              run: |
+                  cp misc/install.sh dist/release/install.sh
+                  cp misc/install.ps1 dist/release/install.ps1
+
+            - name: Create the "latest" release if it does not exist
+              run: |
+                  gh release view latest >/dev/null 2>&1 || gh release create latest \
+                    --title "SnoreClient latest" \
+                    --notes "Rolling release. Every push to main replaces these files. Install with the scripts in the README." \
+                    --latest
+
             - name: Upload SnoreClient Stable
               run: |
+                  gh release edit latest --title "SnoreClient ${GITHUB_SHA}" --latest
                   gh release upload latest --clobber dist/release/*

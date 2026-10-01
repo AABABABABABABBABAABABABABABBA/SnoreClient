@@ -9,7 +9,25 @@
 - **A fresh look.** New logo, a redesigned settings landing panel, polished cards, and a matching web front end served by the same server.
 - **Build time branding.** One environment variable points a build at your server for cloud sync, plugin pages, downloads and assets.
 
-## Quick start (client)
+## Install
+
+**Windows** (PowerShell):
+
+```powershell
+irm https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/install.ps1 | iex
+```
+
+**Linux / macOS**:
+
+```shell
+bash -c "$(curl -fsSL https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/install.sh)"
+```
+
+The script downloads the latest SnoreClient build from the `latest` GitHub release plus the Equilotl installer, then patches the Discord install you pick. Fully quit Discord afterwards and start it again. Pass `-Uninstall` (Windows) or `--uninstall` (Linux/macOS) to remove it. After that, updates arrive through **Settings → SnoreClient → Updater**.
+
+**Browser:** download `extension-chrome.zip` or `extension-firefox.zip` from the [latest release](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest) and load it as an unpacked extension, or install `SnoreClient.user.js` in a userscript manager.
+
+## Build from source
 
 [Git](https://git-scm.com/download), [Node.js 22+](https://nodejs.org) and `pnpm` (`npm i -g pnpm`) are required.
 
@@ -59,7 +77,7 @@ The short version for Cloudflare:
 
 ## Releases
 
-The **Release** workflow uploads build artifacts to a GitHub release tagged `latest`. Create that release once (`gh release create latest --title "SnoreClient latest"`), and set the repository variable `SNORECLIENT_SERVER_URL` so CI builds point at your server. The built in updater and the server's download page both read from that release.
+Every push to `main` runs the **Release** workflow, which builds everything and publishes it to the GitHub release tagged `latest` (creating it the first time). The installer scripts, the in-app updater and the website's download page all read from that release. You can also run it by hand from the Actions tab.
 
 ## Project layout
 
