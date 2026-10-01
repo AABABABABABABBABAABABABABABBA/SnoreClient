@@ -41,3 +41,7 @@ misc/bundle
 
 # intl scripts
 misc/scripts
+
+# local release bundles
+*-release.zip
+server/cloudflare/dist
