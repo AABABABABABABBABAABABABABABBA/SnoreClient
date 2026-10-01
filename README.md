@@ -11,7 +11,15 @@
 
 ## Install
 
-**Windows** (PowerShell):
+**Windows:** download and run [`SnoreClientInstaller.exe`](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller.exe) ([ARM64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-arm64.exe)). It fetches the latest build and opens the installer window where you pick your Discord install. Windows SmartScreen may warn because the file is not code signed; choose "More info → Run anyway".
+
+**macOS:** [`SnoreClientInstaller-macos-arm64`](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-macos-arm64) (Apple Silicon) or [`-macos-x64`](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-macos-x64) (Intel), then `chmod +x` and run it from a terminal.
+
+**Linux:** [`SnoreClientInstaller-linux`](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-linux) ([ARM64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-linux-arm64)), then `chmod +x` and run it.
+
+All installers accept `--uninstall`, `--repair` and `--cli` (terminal mode instead of the window).
+
+Prefer a script? **Windows** (PowerShell):
 
 ```powershell
 irm https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/install.ps1 | iex

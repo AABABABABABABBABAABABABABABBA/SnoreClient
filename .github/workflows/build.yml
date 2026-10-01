@@ -70,6 +70,22 @@ jobs:
                   cp misc/install.sh dist/release/install.sh
                   cp misc/install.ps1 dist/release/install.ps1
 
+            - uses: actions/setup-go@v5
+              with:
+                  go-version: "1.24"
+                  cache-dependency-path: installer/go.sum
+
+            - name: Build the SnoreClient installer executables
+              working-directory: installer
+              run: |
+                  build() { CGO_ENABLED=0 GOOS=$1 GOARCH=$2 go build -trimpath -ldflags="-s -w" -o "../dist/release/$3" . ; }
+                  build windows amd64 SnoreClientInstaller.exe
+                  build windows arm64 SnoreClientInstaller-arm64.exe
+                  build darwin  amd64 SnoreClientInstaller-macos-x64
+                  build darwin  arm64 SnoreClientInstaller-macos-arm64
+                  build linux   amd64 SnoreClientInstaller-linux
+                  build linux   arm64 SnoreClientInstaller-linux-arm64
+
             - name: Create the "latest" release if it does not exist
               run: |
                   gh release view latest >/dev/null 2>&1 || gh release create latest \
