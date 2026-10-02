@@ -1,0 +1,48 @@
+name: SnoreClient
+options:
+  bundleIdPrefix: pw.snore
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    CODE_SIGNING_ALLOWED: "NO"
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGN_IDENTITY: ""
+    DEVELOPMENT_TEAM: ""
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  SnoreClient:
+    type: application
+    platform: iOS
+    sources:
+      - path: SnoreClient
+    info:
+      path: SnoreClient/Info.plist
+      properties:
+        CFBundleDisplayName: SnoreClient
+        CFBundleName: SnoreClient
+        CFBundleIdentifier: pw.snore.client
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSRequiresIPhoneOS: true
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UIViewControllerBasedStatusBarAppearance: true
+        UIBackgroundModes: [audio, voip]
+        NSMicrophoneUsageDescription: Needed for voice chat.
+        NSCameraUsageDescription: Needed for video calls and sending photos.
+        NSPhotoLibraryUsageDescription: Needed to attach photos.
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+        CFBundleIcons:
+          CFBundlePrimaryIcon:
+            CFBundleIconFiles: [AppIcon60x60]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: pw.snore.client
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

@@ -1,0 +1,57 @@
+name: iOS
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - "ios/**"
+            - "src/**"
+            - "browser/**"
+            - ".github/workflows/ios.yml"
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+jobs:
+    ipa:
+        name: Build unsigned IPA
+        runs-on: macos-latest
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            SNORECLIENT_SERVER_URL: ${{ vars.SNORECLIENT_SERVER_URL }}
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup PNPM
+              uses: pnpm/setup@v2.1.0
+              with:
+                  runtime: node@v24
+                  require-lockfile: true
+
+            - name: Build the web client
+              run: pnpm buildWebStandalone
+
+            - name: Prepare app icon and userscript
+              run: |
+                  cp dist/SnoreClient.user.js ios/SnoreClient/Resources/SnoreClient.user.js
+                  mkdir -p ios/SnoreClient/Assets.xcassets/AppIcon.appiconset
+                  sips -z 1024 1024 browser/icon.png --out ios/SnoreClient/Assets.xcassets/AppIcon.appiconset/icon-1024.png >/dev/null
+                  cat > ios/SnoreClient/Assets.xcassets/AppIcon.appiconset/Contents.json <<'JSON'
+                  {"images":[{"filename":"icon-1024.png","idiom":"universal","platform":"ios","size":"1024x1024"}],"info":{"author":"xcode","version":1}}
+                  JSON
+                  echo '{"info":{"author":"xcode","version":1}}' > ios/SnoreClient/Assets.xcassets/Contents.json
+
+            - name: Generate the Xcode project
+              run: |
+                  brew install xcodegen
+                  cd ios && xcodegen
+
+            - name: Build
+              working-directory: ios
+              run: ./build.sh
+
+            - name: Upload to the latest release
+              run: |
+                  gh release view latest >/dev/null 2>&1 || gh release create latest --title "SnoreClient latest" --notes "Rolling release." --latest
+                  gh release upload latest --clobber ios/build/SnoreClient.ipa

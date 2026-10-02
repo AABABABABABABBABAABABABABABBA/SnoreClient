@@ -48,3 +48,6 @@ server/cloudflare/dist
 installer/out
 installer/vendor
 *.syso
+ios/build
+ios/*.xcodeproj
+ios/SnoreClient/Resources/SnoreClient.user.js

@@ -37,6 +37,8 @@ bash -c "$(curl -fsSL https://github.com/aababababababbabaabababababba/SnoreClie
 
 After installing, fully quit Discord (tray icon too) and start it again. Updates arrive through **Settings → SnoreClient → Updater**.
 
+**iPhone / iPad:** [SnoreClient.ipa](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClient.ipa), unsigned. Install with TrollStore as is, or with AltStore, Sideloadly or ESign, which sign it with your own Apple ID. It wraps Discord's web app with SnoreClient injected; see [`ios/README.md`](./ios/README.md) for what works and what doesn't.
+
 **Browser:** download `extension-chrome.zip` or `extension-firefox.zip` from the [latest release](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest) and load it as an unpacked extension, or install `SnoreClient.user.js` in a userscript manager.
 
 ## Build from source
@@ -100,6 +102,7 @@ src/plugins/             plugins that came from Vencord
 server/                  cloud backend + website (Node) 
 server/cloudflare/       the same backend as a Cloudflare Worker with D1
 installer/               SnoreClient installer (Equilotl fork, Go)
+ios/                     iOS wrapper app, built into an unsigned .ipa
 browser/                 browser extension manifests and icon
 scripts/                 build and tooling
 ```
