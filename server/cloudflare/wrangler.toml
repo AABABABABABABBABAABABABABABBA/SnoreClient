@@ -8,6 +8,15 @@ compatibility_flags = ["nodejs_compat"]
 directory = "./public"
 binding = "ASSETS"
 
+# Live presence (who is online right now) runs in a Durable Object
+[[durable_objects.bindings]]
+name = "LIVE"
+class_name = "LiveHub"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["LiveHub"]
+
 [[d1_databases]]
 binding = "DB"
 database_name = "snoreclient"

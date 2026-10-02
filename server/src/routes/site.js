@@ -74,6 +74,7 @@ export const siteRoutes = {
     "GET /privacy": (req, res) => html(res, 200, pages.privacy()),
     "GET /download": (req, res) => html(res, 200, pages.download()),
     "GET /discord": (req, res) => redirect(res, process.env.DISCORD_INVITE || `https://github.com/${config.githubRepo}/discussions`),
+    "GET /v1/live.json": (req, res) => json(res, 200, { online: [], count: 0, viewers: 0, at: Date.now(), note: "Live presence is only available on the Cloudflare deployment" }, { "Cache-Control": "no-store" }),
     "GET /health": (req, res) => json(res, 200, { ok: true, uptime: Math.round(process.uptime()) }),
 
     "GET /plugins": async (req, res) => html(res, 200, pages.plugins(await loadPlugins())),

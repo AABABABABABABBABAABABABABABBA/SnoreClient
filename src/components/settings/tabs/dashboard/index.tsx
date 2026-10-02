@@ -15,6 +15,7 @@ import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { Switch } from "@components/Switch";
 import { gitHashShort } from "@shared/vencordUserAgent";
+import { usePresence } from "@snoreclientplugins/cloudPresence";
 import { Margins } from "@utils/margins";
 import { relaunch } from "@utils/native";
 import { useForceUpdater } from "@utils/react";
@@ -73,6 +74,7 @@ function DashboardTab() {
     }, []);
 
     const me = UserStore.getCurrentUser();
+    const { presence, connected } = usePresence();
     const enabledPlugins = Object.keys(Plugins).filter(isPluginEnabled);
     const dmCount = ChannelStore.getSortedPrivateChannels().length;
 
@@ -104,6 +106,7 @@ function DashboardTab() {
                 <Tile value={`${enabledPlugins.length} / ${Object.keys(Plugins).length}`} label="Plugins on" />
                 <Tile value={uptime()} label="Session uptime" />
                 <Tile value={gitHashShort} label={`Build v${VERSION}`} />
+                <Tile value={connected ? presence.count : "–"} label="Online on cloud" />
             </div>
 
             <Heading>Status</Heading>

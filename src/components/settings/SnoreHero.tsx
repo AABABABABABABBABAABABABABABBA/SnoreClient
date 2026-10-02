@@ -10,6 +10,7 @@ import { useSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import { SnoreLogo } from "@components/SnoreLogo";
 import { gitHashShort, gitRemote } from "@shared/vencordUserAgent";
+import { usePresence } from "@snoreclientplugins/cloudPresence";
 import { classNameFactory } from "@utils/css";
 import { SettingsRouter } from "@webpack/common";
 
@@ -21,6 +22,7 @@ const platform = IS_WEB
 
 export function SnoreHero() {
     const { cloud } = useSettings(["cloud.authenticated", "cloud.url"]);
+    const { presence, connected } = usePresence();
     let cloudHost = "cloud off";
     try {
         if (cloud.authenticated) cloudHost = new URL(cloud.url).host;
@@ -40,6 +42,7 @@ export function SnoreHero() {
                         <span className={cl("badge-dot", { "badge-dot-off": !cloud.authenticated })} />
                         {cloudHost}
                     </span>
+                    {connected && <span className={cl("badge")}>{presence.count} online</span>}
                 </div>
             </div>
             <div className={cl("hero-actions")}>

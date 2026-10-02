@@ -31,6 +31,7 @@ import { Notice } from "@components/Notice";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { ConnectedAccounts } from "@components/settings/tabs/sync/ConnectedAccounts";
+import { OnlineNow } from "@components/settings/tabs/sync/OnlineNow";
 import { localStorage } from "@utils/localStorage";
 import { Margins } from "@utils/margins";
 import { useForceUpdater } from "@utils/react";
@@ -223,6 +224,10 @@ function CloudTab() {
                     Enable cloud integration above to use settings sync features.
                 </Notice.Warning>
             )}
+
+            <Divider className={Margins.top20} />
+
+            <OnlineNow />
 
             <Divider className={Margins.top20} />
 

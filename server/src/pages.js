@@ -90,7 +90,8 @@ const landing = ({ userCount }) => shell(config.siteName, `
 <h2>Connect this server</h2>
 <p>In Discord open <b>Settings → ${escapeHtml(config.siteName)} → Cloud</b>, paste the URL below as the backend and turn on Cloud Integration.</p>
 <pre>${escapeHtml(config.publicUrl)}/</pre>
-</div>`);
+</div>
+${liveWidget()}`);
 
 const privacy = () => page("Privacy", `
 <div class="card">
@@ -159,6 +160,32 @@ ${p.tags?.length ? `<h2>Tags</h2><div class="tags">${p.tags.map(t => `<span clas
 </div>
 <p><a href="/plugins">← All plugins</a></p>`);
 
+const liveWidget = () => `
+<div class="card" id="live-card" style="margin-top:18px">
+<h2><span class="dot" id="live-dot" style="display:inline-block;vertical-align:middle;margin-right:6px"></span>Online now · <span id="live-count">…</span></h2>
+<div id="live-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"><span class="badge">connecting…</span></div>
+</div>
+<script>
+(() => {
+  const dot = document.getElementById("live-dot"), count = document.getElementById("live-count"), list = document.getElementById("live-list");
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const ago = t => { const s = Math.floor((Date.now() - t) / 1000); return s < 60 ? "just now" : s < 3600 ? Math.floor(s / 60) + " min" : Math.floor(s / 3600) + " h"; };
+  function render(p) {
+    count.textContent = p.count + (p.viewers ? " · " + p.viewers + " watching" : "");
+    list.innerHTML = p.online.length ? p.online.map(u => '<span class="badge"><span class="dot"></span>' + esc(u.username) + ' <span style="opacity:.6">' + ago(u.since) + '</span></span>').join("") : '<span class="badge">nobody online right now</span>';
+  }
+  let retry = 1000;
+  function connect() {
+    const ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/v1/live");
+    ws.onopen = () => { retry = 1000; dot.style.background = "var(--ok)"; };
+    ws.onmessage = e => { const m = JSON.parse(e.data); if (m.type === "hello" || m.type === "presence") render(m); };
+    ws.onclose = () => { dot.style.background = "var(--muted)"; setTimeout(connect, retry = Math.min(retry * 2, 30000)); };
+    setInterval(() => { if (ws.readyState === 1) ws.send("ping"); }, 25000);
+  }
+  connect();
+})();
+</script>`;
+
 const accounts = list => page("Connected accounts", `
 <p class="lead">${list.length} account${list.length === 1 ? "" : "s"} connected to this ${escapeHtml(config.siteName)} cloud, most recently active first.</p>
 ${list.length ? `<div class="grid">${list.map(a => `
@@ -169,7 +196,8 @@ ${list.length ? `<div class="grid">${list.map(a => `
 Last sync ${escapeHtml(new Date(a.last_seen_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }))}<br>
 ${a.data_count} synced ${a.data_count === 1 ? "entry" : "entries"}</p>
 </div>`).join("")}</div>` : "<div class=\"card\"><p>No accounts yet, or this instance keeps its account list private.</p></div>"}
-<p style="margin-top:18px">Raw data: <a href="/v1/accounts"><code>GET /v1/accounts</code></a></p>`);
+<p style="margin-top:18px">Raw data: <a href="/v1/accounts"><code>GET /v1/accounts</code></a> · live: <a href="/v1/live.json"><code>GET /v1/live.json</code></a> · <code>wss://${escapeHtml(new URL(config.publicUrl).host)}/v1/live</code></p>
+${liveWidget()}`);
 
 return { page, landing, privacy, download, plugins, plugin, accounts };
 }

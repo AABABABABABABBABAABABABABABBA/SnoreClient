@@ -5,6 +5,8 @@
 
 import { createPages, escapeHtml } from "../src/pages.js";
 
+export { LiveHub } from "./live.js";
+
 const KEY_RE = /^[A-Za-z0-9_./-]{1,128}$/;
 const DISCORD_API = "https://discord.com/api/v10";
 
@@ -174,6 +176,18 @@ async function listAccounts(db) {
     `).all();
     return results.map(r => ({ ...r, data_count: Number(r.data_count) }));
 }
+
+function hub(env) {
+    if (!env.LIVE) throw new HttpError(503, "Live presence is not configured on this server");
+    return env.LIVE.get(env.LIVE.idFromName("global"));
+}
+
+// WebSocket: wss://host/v1/live?auth=<base64 secret:userId> for clients, no auth for read only viewers
+route("GET", "/v1/live", ({ req, env }) => hub(env).fetch(req));
+route("GET", "/v1/live.json", async ({ env }) => {
+    const res = await hub(env).fetch("https://live/snapshot");
+    return json(await res.json(), 200, { "Cache-Control": "no-store" });
+});
 
 route("GET", "/v1/accounts", async ({ cfg, db }) => {
     if (!cfg.publicAccounts) throw new HttpError(404, "Not found");
@@ -390,6 +404,7 @@ export default {
         const url = new URL(req.url);
         const isApi = /^\/v\d\//.test(url.pathname);
         const withHeaders = res => {
+            if (res.status === 101) return res;
             const headers = new Headers(res.headers);
             if (isApi) for (const [k, v] of Object.entries(CORS)) headers.set(k, v);
             headers.set("X-Content-Type-Options", "nosniff");
