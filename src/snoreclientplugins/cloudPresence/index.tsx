@@ -10,6 +10,7 @@ import { definePluginSettings, Settings, SettingsStore } from "@api/Settings";
 import { getCloudAuth } from "@api/SettingsSync/cloudSetup";
 import { onCloudKey, pullCloudKeys, putCloudKey } from "@api/SettingsSync/cloudSync";
 import { gitHashShort } from "@shared/vencordUserAgent";
+import { ActivityEvent, activityListeners } from "@snoreclientplugins/notifier";
 import { perf } from "@snoreclientplugins/optimizer";
 import { SnoreClientDevs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
@@ -322,6 +323,23 @@ async function applySocial(cmd: NonNullable<RemoteCommands["social"]>) {
     setTimeout(publishSocial, 3000);
 }
 
+const ACTIVITY_KEY = "snore-activity";
+let activity: ActivityEvent[] = [];
+let activityTimer: ReturnType<typeof setTimeout> | undefined;
+
+function onActivity(e: ActivityEvent) {
+    activity.push(e);
+    if (activity.length > 300) activity = activity.slice(-300);
+    DataStore.set(ACTIVITY_KEY, activity).catch(() => { });
+    clearTimeout(activityTimer);
+    activityTimer = setTimeout(publishActivity, 1500);
+}
+
+async function publishActivity() {
+    if (!Settings.cloud.authenticated) return;
+    await putCloudKey("activity", { entries: activity.slice(-200), updatedAt: Date.now() }).catch(() => { });
+}
+
 async function publishNotifications() {
     if (!Settings.cloud.authenticated) return;
     const log = await DataStore.get<any[]>("notification-log") ?? [];
@@ -414,6 +432,8 @@ export default definePlugin({
 
     async start() {
         messageLog = await DataStore.get<LoggedMessage[]>(LOG_KEY) ?? [];
+        activity = await DataStore.get<ActivityEvent[]>(ACTIVITY_KEY) ?? [];
+        activityListeners.add(onActivity);
         connect();
         SettingsStore.addGlobalChangeListener(onSettingChange);
         publishTimer = setInterval(() => { publishMessageLog(); publishDevice(); publishNotifications(); publishSocial(); }, 5 * 60_000);
@@ -424,6 +444,8 @@ export default definePlugin({
     },
 
     stop() {
+        activityListeners.delete(onActivity);
+        clearTimeout(activityTimer);
         clearInterval(publishTimer);
         clearInterval(remoteTimer);
         unregisterRemote?.();

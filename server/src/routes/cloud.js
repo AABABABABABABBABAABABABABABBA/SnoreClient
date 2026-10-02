@@ -177,6 +177,14 @@ export const cloudRoutes = {
         json(res, 200, state, { "Cache-Control": "public, max-age=15", "Access-Control-Allow-Origin": "*" });
     },
 
+    "GET /v1/me/activity": (req, res) => {
+        const user = requireSession(req);
+        const row = dataV2.get(user.id, "activity");
+        let data = { entries: [], updatedAt: 0 };
+        if (row) { try { data = JSON.parse(Buffer.from(row.value).toString("utf8")); } catch { } }
+        json(res, 200, data, { "Cache-Control": "no-store" });
+    },
+
     "GET /v1/me/backups": (req, res) => {
         const user = requireSession(req);
         json(res, 200, { backups: dataV2.history(user.id, "settings").map(h => ({ ...h, size: Math.round(h.size * 0.75) })) });

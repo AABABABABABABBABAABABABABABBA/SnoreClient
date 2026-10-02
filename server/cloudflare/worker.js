@@ -505,6 +505,14 @@ route("GET", "/v1/profile/:id/lastfm", async ({ db, params }) => {
     return json(state, 200, { "Cache-Control": "public, max-age=15", "Access-Control-Allow-Origin": "*" });
 });
 
+route("GET", "/v1/me/activity", async ({ req, cfg, db }) => {
+    const user = await requireSession(req, cfg, db);
+    const row = await db.prepare("SELECT value FROM data_v2 WHERE user_id = ? AND key = 'activity'").bind(user.id).first();
+    let data = { entries: [], updatedAt: 0 };
+    if (row) { try { data = JSON.parse(new TextDecoder().decode(b64.decode(row.value))); } catch { } }
+    return json(data, 200, { "Cache-Control": "no-store" });
+});
+
 route("GET", "/v1/me/backups", async ({ req, cfg, db }) => {
     const user = await requireSession(req, cfg, db);
     const { results } = await db.prepare("SELECT id, version, checksum, length(value) AS size, saved_at FROM data_history WHERE user_id = ? AND key = 'settings' ORDER BY saved_at DESC").bind(user.id).all();

@@ -387,6 +387,7 @@ th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;
 <div class="card">
 <div class="me"><img id="me-avatar" src="/assets/icon.png" alt=""><div><b id="me-name">${escapeHtml(user.username)}</b><small>@${escapeHtml(user.username)}</small></div></div>
 <div class="item active" data-panel="overview">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><rect x='3' y='3' width='8' height='8' rx='2'/><rect x='13' y='3' width='8' height='5' rx='2'/><rect x='13' y='10' width='8' height='11' rx='2'/><rect x='3' y='13' width='8' height='8' rx='2'/></svg>"}Overview</div>
+<div class="item" data-panel="activity">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M3 12h4l3-8 4 16 3-8h4'/></svg>"}Activity <span class="badge" id="ac-badge" style="display:none;margin-left:auto;padding:1px 8px"></span></div>
 <div class="item" data-panel="data">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M17.5 19a4.5 4.5 0 0 0 .4-9A7 7 0 0 0 4.3 12.5 3.5 3.5 0 0 0 5.5 19Z'/></svg>"}Cloud data</div>
 <div class="item" data-panel="stats">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M4 20V10m6 10V4m6 16v-7m4 7H2'/></svg>"}Statistics</div>
 <div class="item" data-panel="controls">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><circle cx='12' cy='12' r='3'/><path d='M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z'/></svg>"}Controls</div>
@@ -401,7 +402,7 @@ th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;
 <div class="item" data-panel="snippets">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M8 7h8M8 12h8M8 17h5'/><rect x='4' y='3' width='16' height='18' rx='2'/></svg>"}Snippets</div>
 <div class="item" data-panel="css">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16'/></svg>"}Quick CSS</div>
 <div class="item" data-panel="backups">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M12 8v4l3 2'/><path d='M3 12a9 9 0 1 0 3-6.7'/><path d='M3 4v5h5'/></svg>"}Backups</div>
-<div class="item" data-panel="activity">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><rect x='3' y='3' width='4' height='4'/><rect x='10' y='3' width='4' height='4'/><rect x='17' y='3' width='4' height='4'/><rect x='3' y='10' width='4' height='4'/><rect x='10' y='10' width='4' height='4'/><rect x='17' y='10' width='4' height='4'/><rect x='3' y='17' width='4' height='4'/><rect x='10' y='17' width='4' height='4'/></svg>"}Activity</div>
+<div class="item" data-panel="usage">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><rect x='3' y='3' width='4' height='4'/><rect x='10' y='3' width='4' height='4'/><rect x='17' y='3' width='4' height='4'/><rect x='3' y='10' width='4' height='4'/><rect x='10' y='10' width='4' height='4'/><rect x='17' y='10' width='4' height='4'/><rect x='3' y='17' width='4' height='4'/><rect x='10' y='17' width='4' height='4'/></svg>"}Usage</div>
 <div class="item" data-panel="news">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M4 5h16v14H4Z'/><path d='M8 9h8M8 13h5'/></svg>"}What's new</div>
 <div class="item" data-panel="security">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6Z'/><path d='m9 12 2 2 4-4'/></svg>"}Security</div>
 <div class="item" data-panel="messages">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M4 5h16v11H8l-4 4Z'/><path d='M8 9h8M8 12h5'/></svg>"}Message log</div>
@@ -423,6 +424,19 @@ th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;
 </div>
 <div class="card" style="margin-bottom:14px"><h3>Last 30 days</h3><p style="font-size:.85rem">Messages sent per day, from the Statistics plugin.</p><div id="chart" style="display:flex;align-items:flex-end;gap:4px;height:120px"></div><div id="chart-labels" style="display:flex;justify-content:space-between;color:var(--muted);font-size:.72rem;margin-top:4px"></div></div>
 ${liveWidget()}
+</div>
+<div class="panel" id="panel-activity">
+<div class="eyebrow">Activity</div><h2>Everything that <span class="hl">happens</span>, live</h2>
+<p id="ac-note">Pings, giveaways, servers joined or left, friend changes, group renames, roles and more, pushed from the app as they happen. Keep this tab open and you will hear a sound.</p>
+<div class="row" style="margin:10px 0;flex-wrap:wrap;align-items:center">
+<label class="badge" style="cursor:pointer;gap:8px"><input type="checkbox" id="ac-sound" style="accent-color:var(--accent-2)"> Sound</label>
+<label class="badge" style="cursor:pointer;gap:8px"><input type="checkbox" id="ac-desktop" style="accent-color:var(--accent-2)"> Browser notifications</label>
+<a class="btn" id="ac-test" href="#" style="padding:6px 12px;background:transparent">Test sound</a>
+<a class="btn" id="ac-read" href="#" style="padding:6px 12px;background:transparent">Mark all read</a>
+<span class="badge" id="ac-state">connecting…</span>
+</div>
+<div class="chips" id="ac-filters" style="margin-bottom:12px"></div>
+<div id="ac-list" class="grid" style="grid-template-columns:1fr;gap:8px"><div class="card"><p>Loading…</p></div></div>
 </div>
 <div class="panel" id="panel-data">
 <div class="eyebrow">Cloud data</div><h2>What's <span class="hl">synced</span></h2>
@@ -536,8 +550,8 @@ ${liveWidget()}
 <div class="card" style="padding:6px 0"><table><thead><tr><th>Saved</th><th>Version</th><th>Size</th><th>Checksum</th><th></th></tr></thead><tbody id="bk-rows"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
 <div class="row"><a class="btn" id="bk-download" href="#">Download current settings</a></div>
 </div>
-<div class="panel" id="panel-activity">
-<div class="eyebrow">Activity</div><h2>When you're <span class="hl">most active</span></h2>
+<div class="panel" id="panel-usage">
+<div class="eyebrow">Usage</div><h2>When you're <span class="hl">most active</span></h2>
 <p>Messages sent per hour of the day, from the Statistics plugin.</p>
 <div class="card"><div id="hm" style="display:grid;grid-template-columns:repeat(24,1fr);gap:4px"></div><div style="display:flex;justify-content:space-between;color:var(--muted);font-size:.72rem;margin-top:6px"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:00</span></div><p id="hm-note" style="margin:10px 0 0"></p></div>
 <div class="kpis" id="act-kpis"></div>
@@ -616,6 +630,53 @@ ${liveWidget()}
     $("pp-url").textContent = location.origin + "/u/" + u.id;
     $("sec-public").checked = !!((me.remote && "publicProfile" in me.remote) ? me.remote.publicProfile : me.device && me.device.publicProfile);
   }
+  const AC_CATS = { ping: "Pings", giveaway: "Giveaways", server: "Servers", friends: "Friends", group: "Group DMs", ghostping: "Ghost pings", roles: "Roles", voice: "Voice", dm: "DMs", other: "Other" };
+  const AC_ICON = { ping: "@", giveaway: "🎉", server: "🏠", friends: "👥", group: "✏️", ghostping: "👻", roles: "🏷️", voice: "🔊", dm: "💬", other: "•" };
+  const acState = { entries: [], seen: new Set(), filter: "all", lastRead: 0, ready: false };
+  try { acState.lastRead = Number(localStorage.getItem("ac-read") || 0); $("ac-sound").checked = localStorage.getItem("ac-sound") !== "0"; $("ac-desktop").checked = localStorage.getItem("ac-desktop") === "1"; } catch {}
+  let acAudio = null;
+  function acChime(kind) {
+    try {
+      acAudio = acAudio || new (window.AudioContext || window.webkitAudioContext)();
+      const now = acAudio.currentTime;
+      const notes = kind === "danger" ? [[440, 0], [330, 0.15]] : kind === "warning" ? [[660, 0], [660, 0.15]] : [[880, 0], [1174, 0.12]];
+      for (const [f, t] of notes) { const o = acAudio.createOscillator(), g = acAudio.createGain(); o.type = "sine"; o.frequency.value = f; g.gain.setValueAtTime(0.0001, now + t); g.gain.exponentialRampToValueAtTime(0.18, now + t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, now + t + 0.3); o.connect(g).connect(acAudio.destination); o.start(now + t); o.stop(now + t + 0.35); }
+    } catch {}
+  }
+  function renderActivity() {
+    const all = acState.entries.slice().sort((a, b) => b.at - a.at);
+    const counts = {}; for (const e of all) counts[e.category] = (counts[e.category] || 0) + 1;
+    $("ac-filters").innerHTML = ["all", ...Object.keys(AC_CATS).filter(c => counts[c])].map(c => "<span class='badge' data-ac-filter='" + c + "' style='cursor:pointer;" + (acState.filter === c ? "border-color:var(--accent-2);color:#fff" : "") + "'>" + (c === "all" ? "All · " + all.length : AC_CATS[c] + " · " + counts[c]) + "</span>").join("");
+    $("ac-filters").querySelectorAll("[data-ac-filter]").forEach(el => el.addEventListener("click", () => { acState.filter = el.dataset.acFilter; renderActivity(); }));
+    const rows = all.filter(e => acState.filter === "all" || e.category === acState.filter).slice(0, 200);
+    const unread = all.filter(e => e.at > acState.lastRead).length;
+    $("ac-badge").style.display = unread ? "" : "none"; $("ac-badge").textContent = unread;
+    document.title = (unread ? "(" + unread + ") " : "") + "Dashboard · ${escapeHtml(config.siteName)}";
+    const col = { info: "#5b8cff", success: "#4ade80", warning: "#fbbf24", danger: "#f23f43" };
+    $("ac-list").innerHTML = rows.length ? rows.map(e => "<div class='card' style='padding:12px 16px;display:flex;gap:12px;align-items:center;" + (e.at > acState.lastRead ? "border-color:rgba(139,180,255,.45)" : "") + "'><div style='width:38px;height:38px;border-radius:10px;flex-shrink:0;display:grid;place-items:center;background:" + (col[e.kind] || col.info) + "22;color:" + (col[e.kind] || col.info) + ";font-weight:700;overflow:hidden'>" + (e.icon ? "<img src='" + esc(e.icon) + "' style='width:38px;height:38px'>" : (AC_ICON[e.category] || "•")) + "</div><div style='flex:1;min-width:0'><b>" + esc(e.title) + "</b> <span class='badge' style='padding:1px 8px;font-size:.7rem'>" + esc(AC_CATS[e.category] || e.category) + "</span><br><span style='color:var(--fg);opacity:.85'>" + esc(e.body) + "</span><br><small style='color:var(--muted)'>" + esc(fmtDate(e.at)) + " · " + ago(e.at) + "</small></div>" + (e.jump ? "<a class='btn' href='discord://-" + esc(e.jump) + "' style='padding:6px 12px'>Open</a>" : "") + "</div>").join("") : "<div class='card'><p>" + (all.length ? "Nothing in this category yet." : "Nothing yet. Events arrive here the moment the Notifier plugin fires in the app.") + "</p></div>";
+  }
+  async function pollActivity() {
+    try {
+      const r = await fetch("/v1/me/activity"); if (r.status === 401) { location.href = "/login"; return; }
+      const d = await r.json();
+      const fresh = (d.entries || []).filter(e => !acState.seen.has(e.id));
+      for (const e of d.entries || []) acState.seen.add(e.id);
+      acState.entries = d.entries || [];
+      if (acState.ready && fresh.length) {
+        const top = fresh.sort((a, b) => b.at - a.at)[0];
+        if ($("ac-sound").checked) acChime(top.kind);
+        if ($("ac-desktop").checked && "Notification" in window && Notification.permission === "granted") { try { new Notification("SnoreClient | " + top.title, { body: top.body, icon: top.icon || "/assets/icon.png" }); } catch {} }
+      }
+      acState.ready = true;
+      $("ac-state").textContent = "live · checked " + new Date().toLocaleTimeString();
+      renderActivity();
+    } catch { $("ac-state").textContent = "reconnecting…"; }
+  }
+  $("ac-sound").addEventListener("change", e => { try { localStorage.setItem("ac-sound", e.target.checked ? "1" : "0"); } catch {} if (e.target.checked) acChime("info"); });
+  $("ac-desktop").addEventListener("change", async e => { if (e.target.checked && "Notification" in window && Notification.permission !== "granted") { const p = await Notification.requestPermission(); if (p !== "granted") e.target.checked = false; } try { localStorage.setItem("ac-desktop", e.target.checked ? "1" : "0"); } catch {} });
+  $("ac-test").addEventListener("click", e => { e.preventDefault(); acChime("info"); });
+  $("ac-read").addEventListener("click", e => { e.preventDefault(); acState.lastRead = Date.now(); try { localStorage.setItem("ac-read", String(acState.lastRead)); } catch {} renderActivity(); });
+  pollActivity(); setInterval(pollActivity, 10000);
   function renderFriends() {
     const so = me.social || {};
     const pend = (me.remote && me.remote.social) || {};

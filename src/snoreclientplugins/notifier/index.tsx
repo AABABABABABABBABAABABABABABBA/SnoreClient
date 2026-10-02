@@ -29,6 +29,9 @@ const settings = definePluginSettings({
     nickname: { type: OptionType.BOOLEAN, description: "Your nickname got updated.", default: true },
     typingDm: { type: OptionType.BOOLEAN, description: "Someone is typing in your DMs.", default: false },
     voiceJoin: { type: OptionType.BOOLEAN, description: "Someone joined your voice channel.", default: true },
+    serverJoined: { type: OptionType.BOOLEAN, description: "Joined a server.", default: true },
+    groupRename: { type: OptionType.BOOLEAN, description: "Group DM renamed, with a warning when a group gets renamed a lot.", default: true },
+    giveawayJoined: { type: OptionType.BOOLEAN, description: "Joined a giveaway (you reacted 🎉 to a giveaway message).", default: true },
     giveaway: { type: OptionType.BOOLEAN, description: "Giveaway detected (a bot posted a giveaway in a channel you can see). Detection only, nothing is entered for you.", default: false },
     sound: { type: OptionType.BOOLEAN, description: "Play a short chime with each notification.", default: true },
     webhook: { type: OptionType.STRING, description: "Discord webhook URL. Every event is also posted there as an embed, so you can get them on your phone.", default: "" },
@@ -81,7 +84,26 @@ function webhook(title: string, body: string, kind: Kind, context?: string) {
     }).catch(e => logger.warn("Webhook failed", e));
 }
 
+export interface ActivityEvent { id: string; at: number; title: string; body: string; kind: Kind; category: string; icon?: string; jump?: string; }
+export const activityListeners = new Set<(e: ActivityEvent) => void>();
+
+function categoryOf(title: string) {
+    const t = title.toLowerCase();
+    if (t.includes("giveaway")) return "giveaway";
+    if (t.includes("ghost")) return "ghostping";
+    if (t.includes("pinged") || t.includes("keyword")) return "ping";
+    if (t.includes("friend")) return "friends";
+    if (t.includes("server")) return "server";
+    if (t.includes("role") || t.includes("nickname")) return "roles";
+    if (t.includes("group")) return "group";
+    if (t.includes("voice")) return "voice";
+    if (t.includes("typing") || t.includes("dm")) return "dm";
+    return "other";
+}
+
 export function notify(title: string, body: string, kind: Kind = "info", opts: { icon?: string; jump?: string; context?: string; permanent?: boolean; } = {}) {
+    const event: ActivityEvent = { id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`, at: Date.now(), title, body, kind, category: categoryOf(title), icon: opts.icon, jump: opts.jump };
+    activityListeners.forEach(l => { try { l(event); } catch { } });
     showNotification({
         title: `SnoreClient | ${title}`,
         body,
@@ -104,6 +126,10 @@ const where = (channelId: string) => {
 };
 
 const typingSeen = new Map<string, number>();
+const groupNames = new Map<string, string>();
+const groupRenames = new Map<string, number[]>();
+const knownGuilds = new Set<string>();
+let guildsReady = false;
 const lastRoles = new Map<string, string[]>();
 const lastNick = new Map<string, string | null>();
 
@@ -159,6 +185,42 @@ export default definePlugin({
             if (!settings.store.friendRequest || relationship?.type !== 3) return;
             const user = UserStore.getUser(relationship.id);
             notify("Friend request", `${user?.username ?? relationship.id} sent you a friend request.`, "info", { icon: avatar(relationship.id), jump: "/channels/@me" });
+        },
+
+        CONNECTION_OPEN() {
+            knownGuilds.clear();
+            for (const g of Object.values(GuildStore.getGuilds())) knownGuilds.add(g.id);
+            guildsReady = true;
+        },
+
+        GUILD_CREATE({ guild }: { guild: { id: string; name?: string; unavailable?: boolean; }; }) {
+            if (!guildsReady) return;
+            if (knownGuilds.has(guild.id) || guild?.unavailable) return;
+            knownGuilds.add(guild.id);
+            if (!settings.store.serverJoined) return;
+            notify("Joined server", `You joined ${guild.name ?? GuildStore.getGuild(guild.id)?.name ?? guild.id}.`, "success", { jump: `/channels/${guild.id}` });
+        },
+
+        CHANNEL_UPDATE({ channel }: { channel: { id: string; type: number; name?: string; }; }) {
+            if (!settings.store.groupRename || channel?.type !== 3) return;
+            const before = groupNames.get(channel.id) ?? ChannelStore.getChannel(channel.id)?.name ?? "";
+            const after = channel.name ?? "";
+            groupNames.set(channel.id, after);
+            if (!before || before === after) return;
+            const times = (groupRenames.get(channel.id) ?? []).filter(t => Date.now() - t < 10 * 60_000);
+            times.push(Date.now());
+            groupRenames.set(channel.id, times);
+            const hot = times.length >= 3;
+            notify(hot ? "Group renamed a lot" : "Group DM renamed", `${before} → ${after || "(no name)"}${hot ? ` · ${times.length} renames in 10 min` : ""}`, hot ? "warning" : "info", { jump: `/channels/@me/${channel.id}` });
+        },
+
+        MESSAGE_REACTION_ADD({ channelId, messageId, userId, emoji }: { channelId: string; messageId: string; userId: string; emoji: { name?: string; }; }) {
+            if (!settings.store.giveawayJoined || userId !== me()?.id || !["🎉", "🎊", "🎁"].includes(emoji?.name ?? "")) return;
+            const m = MessageStore.getMessage(channelId, messageId);
+            const text = `${m?.content ?? ""} ${m?.embeds?.map(e => `${e.rawTitle ?? ""} ${e.rawDescription ?? ""}`).join(" ") ?? ""}`.toLowerCase();
+            if (!m?.author?.bot || !text.includes("giveaway")) return;
+            const w = where(channelId);
+            notify("Joined giveaway", `You entered a giveaway in ${w.label}.`, "success", { jump: w.jump });
         },
 
         GUILD_DELETE({ guild }: { guild: { id: string; unavailable?: boolean; }; }) {
