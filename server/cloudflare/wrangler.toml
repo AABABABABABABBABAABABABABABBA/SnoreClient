@@ -16,7 +16,7 @@ database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
 
 [vars]
 PUBLIC_URL = "https://snore.pw"
-DISCORD_CLIENT_ID = "REPLACE_WITH_YOUR_DISCORD_CLIENT_ID"
+DISCORD_CLIENT_ID = "1555362238766911528"
 GITHUB_REPO = "aababababababbabaabababababba/SnoreClient"
 SITE_NAME = "SnoreClient"
 # Comma separated Discord user ids to make the instance private. Empty = anyone can connect.
