@@ -195,6 +195,14 @@ func isSnoreClientLoaderAppAsar(appAsar string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	// Older Vencord and Equicord installers replaced app.asar with a folder holding index.js and package.json
+	if stat.IsDir() {
+		b, err := os.ReadFile(path.Join(appAsar, "index.js"))
+		if err != nil {
+			return false, nil
+		}
+		return bytes.Contains(b, []byte("require(")), nil
+	}
 	if stat.Size() > 128*1024 {
 		return false, nil
 	}
@@ -202,7 +210,7 @@ func isSnoreClientLoaderAppAsar(appAsar string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return bytes.Contains(b, []byte(PackageJson)) && bytes.Contains(b, []byte("require(")), nil
+	return bytes.Contains(b, []byte("require(")) && bytes.Contains(b, []byte(`"main"`)), nil
 }
 
 func cleanupDesyncedPatchedInstall(dir string, isSystemElectron bool) (bool, error) {
