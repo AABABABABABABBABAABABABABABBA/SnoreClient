@@ -455,6 +455,12 @@ ${liveWidget()}
 <div class="eyebrow">Devices</div><h2>Where you're <span class="hl">signed in</span></h2>
 <p>Each client that syncs reports itself here.</p>
 <div id="dev-list" class="grid"><div class="card"><p>Loading…</p></div></div>
+<h3 style="margin-top:18px">Discord connected right now</h3><p style="font-size:.85rem">Every device with Discord open on your account, as Discord's gateway reports it.</p>
+<div id="dev-gateway" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))"></div>
+<h3 style="margin-top:18px">Authorized devices</h3><p style="font-size:.85rem">Devices that have logged in to your Discord account. Log them out from Discord → Settings → Devices.</p>
+<div class="card" style="padding:6px 0"><table><thead><tr><th>Device</th><th>Platform</th><th>Last used</th></tr></thead><tbody id="dev-auth"><tr><td colspan="4">Loading…</td></tr></tbody></table></div>
+<h3 style="margin-top:18px">Account</h3><div class="kpis" id="dev-account"></div>
+<h3 style="margin-top:18px">System</h3><div class="kpis" id="dev-system"></div>
 <div class="card" style="margin-top:14px"><h3>Friends on SnoreClient online now</h3><div id="dev-online" class="chips"></div></div>
 </div>
 <div class="panel" id="panel-notifications">
@@ -700,6 +706,16 @@ ${liveWidget()}
   function renderDevices() {
     const d = me.device;
     $("dev-list").innerHTML = d ? "<div class='card'><h3>" + esc(d.platform) + "</h3><p>" + esc(d.os || "") + "<br>v" + esc(d.version) + " · " + esc(d.hash) + " · " + esc(d.channel || "stable") + " channel<br>" + (d.plugins ? d.plugins.filter(p => p.enabled).length + " plugins on" : "") + "<br><span class='badge'><span class='dot' style='" + (me.online ? "" : "background:var(--muted);box-shadow:none") + "'></span>" + (me.online ? "online now" : "last seen " + ago(d.updatedAt)) + "</span></p></div>" : "<div class='card'><p>No device has reported yet.</p></div>";
+    const gw = (d && d.sessions) || [];
+    const osIcon = o => /windows/i.test(o) ? "🪟" : /mac|ios|iphone|ipad/i.test(o) ? "" : /android/i.test(o) ? "🤖" : /linux/i.test(o) ? "🐧" : "💻";
+    $("dev-gateway").innerHTML = gw.length ? gw.map(x => "<div class='card' style='padding:14px 16px'><b>" + osIcon(x.os) + " " + esc(x.os || "unknown") + "</b> <span style='color:var(--muted)'>" + esc(x.client || "") + "</span><br><span class='badge'><span class='dot' style='" + ({ online: "", idle: "background:#fcd34d;box-shadow:none", dnd: "background:#f87171;box-shadow:none" }[x.status] ?? "background:var(--muted);box-shadow:none") + "'></span>" + esc(x.status) + (x.active ? " · active" : "") + "</span>" + (x.activities && x.activities.length ? "<br><small style='color:var(--muted)'>" + esc(x.activities.join(", ")) + "</small>" : "") + "</div>").join("") : "<div class='card'><p>" + (d ? "Only this client is connected." : "Waiting for the app to report.") + "</p></div>";
+    const au = ((d && d.authSessions) || []).slice().sort((a, b) => b.lastUsed - a.lastUsed);
+    $("dev-auth").innerHTML = au.length ? au.map(x => "<tr><td>" + osIcon(x.os) + " " + esc(x.os) + "</td><td>" + esc(x.platform) + "</td><td>" + esc(ago(x.lastUsed)) + "</td></tr>").join("") : "<tr><td colspan='3'>Not reported yet.</td></tr>";
+    const a = (d && d.account) || null;
+    const nitro = { 0: "None", 1: "Classic", 2: "Nitro", 3: "Basic" };
+    $("dev-account").innerHTML = a ? [[esc(a.status), "Status"], [nitro[a.premiumType] || a.premiumType, "Nitro"], [a.mfaEnabled ? "On" : "Off", "2FA"], [a.verified ? "Yes" : "No", "Email verified"], [new Date(a.createdAt).toLocaleDateString(), "Account created"], [a.voice ? esc(a.voice.channel) + " <small>" + esc(a.voice.guild) + (a.voice.muted ? " · muted" : "") + (a.voice.deafened ? " · deafened" : "") + (a.voice.streaming ? " · streaming" : "") + "</small>" : "Not in voice", "Voice"], [a.activities && a.activities.length ? esc(a.activities.join(", ")) : "None", "Activities"]].map(([v, l]) => "<div class='kpi'><strong style='font-size:1.1rem'>" + v + "</strong><small>" + l + "</small></div>").join("") : "<div class='kpi'><strong>–</strong><small>Not reported yet</small></div>";
+    const sy = (d && d.system) || null;
+    $("dev-system").innerHTML = sy ? [[esc(sy.discordBuild) + " " + esc(sy.buildNumber), "Discord build"], [sy.appVersion ? esc(sy.appVersion) : "web", "Discord app"], [sy.cores || "?", "CPU cores"], [sy.memoryGb ? "≥ " + sy.memoryGb + " GB" : "?", "Memory"], [esc(sy.screen), "Screen"], [esc(sy.locale), "Locale"], [esc(sy.timezone), "Timezone"], [sy.connection ? esc(sy.connection) : (sy.onLine ? "online" : "offline"), "Connection"], [sy.startedAt ? hms(Math.floor((d.updatedAt - sy.startedAt) / 1000)) : "?", "Discord open for"]].map(([v, l]) => "<div class='kpi'><strong style='font-size:1.1rem'>" + v + "</strong><small>" + l + "</small></div>").join("") : "<div class='kpi'><strong>–</strong><small>Not reported yet</small></div>";
     const others = (me.onlineUsers || []).filter(u => u.id !== me.user.id);
     $("dev-online").innerHTML = others.length ? others.map(u => "<span class='badge'><span class='dot'></span>" + esc(u.username) + "</span>").join("") : "<span class='badge'>nobody else online right now</span>";
   }

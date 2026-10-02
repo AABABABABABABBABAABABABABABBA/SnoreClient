@@ -16,7 +16,7 @@ import definePlugin, { OptionType } from "@utils/types";
 import { Message } from "@vencord/discord-types";
 import { RelationshipType } from "@vencord/discord-types/enums";
 import { findByPropsLazy } from "@webpack";
-import { ChannelStore, GuildStore, MessageRequestStore, MessageStore, RelationshipStore, RestAPI, useEffect, UserStore, useState } from "@webpack/common";
+import { AuthSessionsStore, ChannelStore, GuildStore, MessageRequestStore, MessageStore, PresenceStore, RelationshipStore, RestAPI, SelectedChannelStore, SessionsStore, useEffect, UserStore, useState, VoiceStateStore } from "@webpack/common";
 
 import Plugins from "~plugins";
 
@@ -196,6 +196,56 @@ let unregisterRemote: (() => void) | undefined;
 
 const platformName = () => IS_WEB ? (IS_EXTENSION ? "Browser extension" : IS_USERSCRIPT ? "Userscript" : "Web") : IS_EQUIBOP ? "Equibop" : IS_VESKTOP ? "Vesktop" : "Discord Desktop";
 
+interface AuthSessionJson { id_hash: string; approx_last_used_time: string; client_info?: { os?: string; platform?: string; location?: string; }; }
+
+async function authorizedSessions() {
+    try {
+        const res = await RestAPI.get({ url: "/auth/sessions" });
+        const list = (res.body?.user_sessions ?? []) as AuthSessionJson[];
+        return list.map(x => ({ id: x.id_hash.slice(0, 8), os: x.client_info?.os ?? "", platform: x.client_info?.platform ?? "", lastUsed: Date.parse(x.approx_last_used_time) }));
+    } catch {
+        return AuthSessionsStore.getSessions().map(x => ({ id: x.id_hash.slice(0, 8), os: x.client_info?.os ?? "", platform: x.client_info?.platform ?? "", lastUsed: new Date(x.approx_last_used_time).getTime() }));
+    }
+}
+
+function gatewaySessions() {
+    return Object.values(SessionsStore.getSessions()).map(x => ({
+        id: x.sessionId, status: x.status, active: x.active,
+        os: x.clientInfo?.os ?? "", client: x.clientInfo?.client ?? "",
+        activities: (x.activities ?? []).map(a => a.name).slice(0, 5),
+    }));
+}
+
+function accountInfo() {
+    const me = UserStore.getCurrentUser();
+    const voiceId = SelectedChannelStore.getVoiceChannelId();
+    const voice = voiceId ? ChannelStore.getChannel(voiceId) : null;
+    const vs = voiceId ? VoiceStateStore.getVoiceStateForUser(me.id) : undefined;
+    return {
+        createdAt: Number(BigInt(me.id) >> 22n) + 1420070400000,
+        premiumType: me.premiumType ?? 0,
+        mfaEnabled: !!me.mfaEnabled,
+        verified: !!me.verified,
+        status: PresenceStore.getStatus(me.id),
+        activities: PresenceStore.getActivities(me.id).map(a => a.name).slice(0, 5),
+        voice: voice ? { channel: voice.name, guild: voice.guild_id ? GuildStore.getGuild(voice.guild_id)?.name ?? "" : "DM", muted: !!vs?.selfMute, deafened: !!vs?.selfDeaf, video: !!vs?.selfVideo, streaming: !!vs?.selfStream } : null,
+    };
+}
+
+function systemInfo() {
+    const env = window.GLOBAL_ENV ?? {};
+    const nav = navigator as Navigator & { deviceMemory?: number; connection?: { effectiveType?: string; }; userAgentData?: { platform?: string; }; };
+    return {
+        discordBuild: env.RELEASE_CHANNEL ?? "", buildNumber: env.BUILD_NUMBER ?? "",
+        appVersion: typeof DiscordNative !== "undefined" ? String(DiscordNative.app?.getVersion?.() ?? "") : "",
+        cores: nav.hardwareConcurrency ?? 0, memoryGb: nav.deviceMemory ?? 0,
+        screen: `${screen.width}x${screen.height}@${window.devicePixelRatio}`,
+        locale: nav.language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        connection: nav.connection?.effectiveType ?? "", onLine: nav.onLine,
+        startedAt: performance.timeOrigin,
+    };
+}
+
 async function publishDevice() {
     if (!Settings.cloud.authenticated) return;
     const plugins = Object.values(Plugins)
@@ -215,6 +265,10 @@ async function publishDevice() {
         webhook: Settings.plugins.Notifier?.webhook ? "set" : "",
         snippets: Settings.plugins.TextSnippets?.snippets ?? "",
         publicProfile: settings.store.publicProfile,
+        sessions: gatewaySessions(),
+        authSessions: await authorizedSessions(),
+        account: accountInfo(),
+        system: systemInfo(),
         guilds: Object.values(GuildStore.getGuilds()).map(g => ({ id: g.id, name: g.name, icon: g.icon, owner: g.ownerId === UserStore.getCurrentUser()?.id })),
         plugins,
         updatedAt: Date.now(),
@@ -330,6 +384,8 @@ export default definePlugin({
     settings,
 
     flux: {
+        SESSIONS_REPLACE() { setTimeout(publishDevice, 2000); },
+        VOICE_STATE_UPDATES() { setTimeout(publishDevice, 5000); },
         RELATIONSHIP_ADD() { setTimeout(publishSocial, 2000); },
         RELATIONSHIP_REMOVE() { setTimeout(publishSocial, 2000); },
         MESSAGE_DELETE({ id, channelId }: { id: string; channelId: string; }) {
