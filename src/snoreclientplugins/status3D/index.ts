@@ -31,7 +31,7 @@ export default definePlugin({
     name: "Status3D",
     description: "Turns the flat status dots into glossy 3D orbs.",
     authors: [SnoreClientDevs.founder],
-    enabledByDefault: true,
+    required: true,
     managedStyle: style,
 
     start() {

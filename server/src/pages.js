@@ -375,6 +375,7 @@ th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;
 <div class="item active" data-panel="overview">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><rect x='3' y='3' width='8' height='8' rx='2'/><rect x='13' y='3' width='8' height='5' rx='2'/><rect x='13' y='10' width='8' height='11' rx='2'/><rect x='3' y='13' width='8' height='8' rx='2'/></svg>"}Overview</div>
 <div class="item" data-panel="data">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M17.5 19a4.5 4.5 0 0 0 .4-9A7 7 0 0 0 4.3 12.5 3.5 3.5 0 0 0 5.5 19Z'/></svg>"}Cloud data</div>
 <div class="item" data-panel="stats">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M4 20V10m6 10V4m6 16v-7m4 7H2'/></svg>"}Statistics</div>
+<div class="item" data-panel="messages">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M4 5h16v11H8l-4 4Z'/><path d='M8 9h8M8 12h5'/></svg>"}Message log</div>
 <div class="item" data-panel="account">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><circle cx='12' cy='8' r='4'/><path d='M4 21a8 8 0 0 1 16 0'/></svg>"}Account</div>
 <div style="border-top:1px solid var(--card-border);margin:10px 0"></div>
 <a class="item" href="/logout">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M10 17l5-5-5-5M15 12H3M21 3v18'/></svg>"}Log out</a>
@@ -404,6 +405,12 @@ ${liveWidget()}
 <p id="stats-note">Statistics are published by the SnoreClient app every few minutes while Cloud Integration is on.</p>
 <div class="kpis" id="stats-kpis"></div>
 <div class="card" id="stats-channels" style="display:none"><h3>Busiest channels</h3><div class="bars" id="stats-bars"></div></div>
+</div>
+<div class="panel" id="panel-messages">
+<div class="eyebrow">Message log</div><h2>Deleted &amp; <span class="hl">edited</span> messages</h2>
+<p id="ml-note">Logged by the MessageLogger plugin and uploaded by your client every five minutes. Turn it off under CloudPresence settings in the app.</p>
+<div class="row" style="margin:10px 0"><input type="search" id="ml-search" placeholder="Filter by user, channel or text…" style="max-width:420px"><span class="badge" id="ml-count"></span></div>
+<div id="ml-list" class="grid" style="grid-template-columns:1fr;gap:10px"><div class="card"><p>Loading…</p></div></div>
 </div>
 <div class="panel" id="panel-account">
 <div class="eyebrow">Account</div><h2>Manage your <span class="hl">account</span></h2>
@@ -449,7 +456,21 @@ ${liveWidget()}
     } else {
       $("stats-kpis").innerHTML = "<div class='kpi'><strong>–</strong><small>No statistics yet</small></div>";
     }
+    renderLog();
   }
+  function renderLog() {
+    const log = (me.messageLog && me.messageLog.entries) || [];
+    const q = ($("ml-search").value || "").toLowerCase();
+    const rows = log.filter(e => !q || [e.author, e.channel, e.guild, e.content, e.before].join(" ").toLowerCase().includes(q));
+    $("ml-count").textContent = rows.length + " of " + log.length;
+    if (me.messageLog && me.messageLog.updatedAt) $("ml-note").textContent = "Last upload " + ago(me.messageLog.updatedAt) + ". Logged by the MessageLogger plugin; turn uploads off under CloudPresence settings in the app.";
+    $("ml-list").innerHTML = rows.length ? rows.map(e => "<div class='card' style='padding:14px 18px'>" +
+      "<div style='display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px'><span class='badge' style='color:" + (e.type === "deleted" ? "#f9a8d4" : "#fcd34d") + "'>" + e.type + "</span><b>" + esc(e.author) + "</b><span style='color:var(--muted);font-size:.85rem'>" + esc(e.guild) + " · " + esc(e.channel) + " · " + esc(fmtDate(e.at)) + "</span></div>" +
+      (e.type === "edited" ? "<p style='margin:0 0 4px'><span style='color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em'>Before</span><br>" + esc(e.before) + "</p><p style='margin:0'><span style='color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em'>After</span><br>" + esc(e.content) + "</p>"
+        : "<p style='margin:0;color:var(--fg)'>" + (esc(e.content) || "<i style='color:var(--muted)'>(no text)</i>") + (e.attachments ? " <span class='badge'>" + e.attachments + " attachment" + (e.attachments === 1 ? "" : "s") + "</span>" : "") + "</p>") +
+      "</div>").join("") : "<div class='card'><p>" + (log.length ? "No matches." : "Nothing logged yet. Enable the MessageLogger plugin in the app and keep CloudPresence uploads on.") + "</p></div>";
+  }
+  $("ml-search").addEventListener("input", renderLog);
   $("dl-json").addEventListener("click", e => { e.preventDefault(); const b = new Blob([JSON.stringify(me, null, 2)], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "snoreclient-cloud.json"; a.click(); });
   $("btn-delete").addEventListener("click", async e => { e.preventDefault(); if (!confirm("Delete all synced data from the cloud?")) return; await fetch("/v1/me/delete", { method: "POST" }); load(); });
   $("btn-disconnect").addEventListener("click", async e => { e.preventDefault(); if (!confirm("Disconnect this account and delete everything?")) return; await fetch("/v1/me/disconnect", { method: "POST" }); location.href = "/"; });

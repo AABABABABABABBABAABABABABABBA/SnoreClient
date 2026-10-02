@@ -107,7 +107,7 @@ export default definePlugin({
     description: "Shows the SnoreClient team's badges and a SnoreClient section on their profiles.",
     authors: [SnoreClientDevs.founder],
     dependencies: ["BadgeAPI", "ProfileSectionsAPI"],
-    enabledByDefault: true,
+    required: true,
     userProfileBadges: [founderBadge, discordBadges],
     renderProfileSection: {
         render: TeamSection,

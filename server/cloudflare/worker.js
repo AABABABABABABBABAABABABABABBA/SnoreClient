@@ -443,11 +443,13 @@ route("GET", "/v1/me", async ({ req, cfg, db, env }) => {
     const profile = await db.prepare("SELECT avatar, global_name FROM profiles WHERE user_id = ?").bind(user.id).first();
     const { results: entries } = await db.prepare("SELECT key, version, checksum, length(value) AS size, updated_at FROM data_v2 WHERE user_id = ? ORDER BY key").bind(user.id).all();
     const v1 = await db.prepare("SELECT written, length(data) AS size FROM settings_v1 WHERE user_id = ?").bind(user.id).first();
-    const statsRow = await db.prepare("SELECT value FROM data_v2 WHERE user_id = ? AND key = 'stats'").bind(user.id).first();
-    let stats = null;
-    if (statsRow) {
-        try { stats = JSON.parse(new TextDecoder().decode(b64.decode(statsRow.value))); } catch { }
-    }
+    const readJsonKey = async key => {
+        const row = await db.prepare("SELECT value FROM data_v2 WHERE user_id = ? AND key = ?").bind(user.id, key).first();
+        if (!row) return null;
+        try { return JSON.parse(new TextDecoder().decode(b64.decode(row.value))); } catch { return null; }
+    };
+    const stats = await readJsonKey("stats");
+    const messageLog = await readJsonKey("messagelog");
     let online = false;
     try {
         const snap = await (await hub(envRef).fetch("https://live/snapshot")).json();
@@ -458,6 +460,7 @@ route("GET", "/v1/me", async ({ req, cfg, db, env }) => {
         entries: entries.map(e => ({ ...e, size: Math.round(Number(e.size) * 0.75) })),
         legacy: v1 ? { written: v1.written, size: Math.round(Number(v1.size) * 0.75) } : null,
         stats,
+        messageLog,
         online,
     }, 200, { "Cache-Control": "no-store" });
 });

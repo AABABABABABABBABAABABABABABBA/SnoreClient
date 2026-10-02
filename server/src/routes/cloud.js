@@ -138,16 +138,19 @@ export const cloudRoutes = {
         const profile = profiles.get(user.id);
         const entries = dataV2.entries(user.id).map(e => ({ ...e, size: Math.round(e.size * 0.75) }));
         const v1 = settingsV1.get(user.id);
-        const statsRow = dataV2.get(user.id, "stats");
-        let stats = null;
-        if (statsRow) {
-            try { stats = JSON.parse(Buffer.from(statsRow.value).toString("utf8")); } catch { }
-        }
+        const readJsonKey = key => {
+            const row = dataV2.get(user.id, key);
+            if (!row) return null;
+            try { return JSON.parse(Buffer.from(row.value).toString("utf8")); } catch { return null; }
+        };
+        const stats = readJsonKey("stats");
+        const messageLog = readJsonKey("messagelog");
         json(res, 200, {
             user: { id: user.id, username: user.username, global_name: profile?.global_name ?? null, avatar: profile?.avatar ?? null, created_at: user.created_at, last_seen_at: user.last_seen_at },
             entries,
             legacy: v1 ? { written: v1.written, size: v1.data.length } : null,
             stats,
+            messageLog,
             online: false,
         }, { "Cache-Control": "no-store" });
     },
