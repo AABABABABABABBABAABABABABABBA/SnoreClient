@@ -14,6 +14,8 @@ I was bored and had an idea to make a Discord client. I do not claim any of the 
 
 ## Install
 
+**Launcher (recommended):** [SnoreClientLauncher.exe](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientLauncher.exe) for Windows ([ARM64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientLauncher-arm64.exe)), [Linux](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientLauncher-linux) ([ARM64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientLauncher-linux-arm64)). One window: it shows whether SnoreClient is installed and current, updates it when needed, and starts Discord with SnoreClient in one click. The full installer is one button away inside it.
+
 | Platform | Download |
 | --- | --- |
 | **Windows** | [SnoreClientInstaller.exe](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller.exe) · [ARM64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstaller-arm64.exe) · CLI: [x64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstallerCli.exe) [ARM64](https://github.com/aababababababbabaabababababba/SnoreClient/releases/latest/download/SnoreClientInstallerCli-arm64.exe) |

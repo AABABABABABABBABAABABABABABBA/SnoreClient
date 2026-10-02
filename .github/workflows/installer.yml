@@ -58,6 +58,7 @@ jobs:
                   CGO_ENABLED=1 GOARCH=${{ matrix.arch }} go build -tags static            -ldflags "$LD" -o out/SnoreClientInstaller-x11${{ matrix.suffix }} .
                   CGO_ENABLED=1 GOARCH=${{ matrix.arch }} go build -tags "static wayland"  -ldflags "$LD" -o out/SnoreClientInstaller-wayland${{ matrix.suffix }} .
                   CGO_ENABLED=1 GOARCH=${{ matrix.arch }} go build -tags "static combined" -ldflags "$LD" -o out/SnoreClientInstaller-linux${{ matrix.suffix }} .
+                  CGO_ENABLED=1 GOARCH=${{ matrix.arch }} go build -tags "static combined launcher" -ldflags "$LD" -o out/SnoreClientLauncher-linux${{ matrix.suffix }} .
                   CGO_ENABLED=0 GOARCH=${{ matrix.arch }} go build -tags cli               -ldflags "$LD" -o out/SnoreClientInstallerCli-linux${{ matrix.suffix }} .
                   chmod +x out/*
 
@@ -96,6 +97,7 @@ jobs:
                   LD="$LDFLAGS_BASE -X 'snoreinstaller/buildinfo.InstallerGitHash=$HASH'"
                   mkdir -p out
                   CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -tags "static gui" -ldflags "$LD -H=windowsgui -extldflags=-static" -o out/SnoreClientInstaller.exe .
+                  CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -tags "static gui launcher" -ldflags "$LD -H=windowsgui -extldflags=-static" -o out/SnoreClientLauncher.exe .
                   CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -tags cli -ldflags "$LD" -o out/SnoreClientInstallerCli.exe .
 
             - uses: actions/upload-artifact@v4
@@ -135,6 +137,7 @@ jobs:
                   LD="$LDFLAGS_BASE -X 'snoreinstaller/buildinfo.InstallerGitHash=$HASH'"
                   mkdir -p out
                   CGO_ENABLED=1 GOOS=windows GOARCH=arm64 CC=aarch64-w64-mingw32-clang CXX=aarch64-w64-mingw32-clang++ go build -tags "static gui" -ldflags "$LD -H=windowsgui -extldflags=-static" -o out/SnoreClientInstaller-arm64.exe .
+                  CGO_ENABLED=1 GOOS=windows GOARCH=arm64 CC=aarch64-w64-mingw32-clang CXX=aarch64-w64-mingw32-clang++ go build -tags "static gui launcher" -ldflags "$LD -H=windowsgui -extldflags=-static" -o out/SnoreClientLauncher-arm64.exe .
                   CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -tags cli -ldflags "$LD" -o out/SnoreClientInstallerCli-arm64.exe .
 
             - uses: actions/upload-artifact@v4

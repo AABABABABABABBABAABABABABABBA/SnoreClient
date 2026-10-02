@@ -9,6 +9,7 @@
 package main
 
 import (
+	"snoreinstaller/buildinfo"
 	"bytes"
 	_ "embed"
 	"errors"
@@ -80,7 +81,7 @@ func main() {
 		os.Setenv("GDK_DPI_SCALE", "1")
 	}
 
-	win = g.NewMasterWindow("SnoreClient Installer", 1200, 800, linuxFlags)
+	win = g.NewMasterWindow(Ternary(buildinfo.Launcher, "SnoreClient", "SnoreClient Installer"), 1200, 800, linuxFlags)
 
 	icon, _, err := image.Decode(bytes.NewReader(iconBytes))
 	if err != nil {
@@ -694,7 +695,7 @@ func loop() {
 		Layout(
 			g.Align(g.AlignCenter).To(
 				g.Style().SetFontSize(40).To(
-					g.Label("SnoreClient Installer"),
+					g.Label(Ternary(buildinfo.Launcher && !showInstallerPage, "SnoreClient", "SnoreClient Installer")),
 				),
 			),
 			g.Dummy(0, 40),
@@ -707,7 +708,16 @@ func loop() {
 				nil,
 			},
 
-			renderInstaller(),
+			&CondWidget{
+				buildinfo.Launcher && !showInstallerPage,
+				renderLauncher,
+				renderInstaller,
+			},
+			&CondWidget{
+				buildinfo.Launcher && showInstallerPage,
+				func() g.Widget { return g.Button("Back to launcher").OnClick(func() { showInstallerPage = false }) },
+				nil,
+			},
 		)
 
 	g.PopStyle()
