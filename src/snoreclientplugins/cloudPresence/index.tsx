@@ -14,7 +14,9 @@ import { SnoreClientDevs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { Message } from "@vencord/discord-types";
-import { ChannelStore, GuildStore, MessageStore, useEffect, UserStore, useState } from "@webpack/common";
+import { RelationshipType } from "@vencord/discord-types/enums";
+import { findByPropsLazy } from "@webpack";
+import { ChannelStore, GuildStore, MessageRequestStore, MessageStore, RelationshipStore, RestAPI, useEffect, UserStore, useState } from "@webpack/common";
 
 import Plugins from "~plugins";
 
@@ -219,6 +221,50 @@ async function publishDevice() {
     }).catch(() => { });
 }
 
+const MessageRequestActions = findByPropsLazy("acceptMessageRequest", "rejectMessageRequest");
+
+function describeUser(id: string) {
+    const u = UserStore.getUser(id);
+    return { id, username: u?.username ?? id, globalName: u?.globalName ?? null, avatar: u?.avatar ?? null };
+}
+
+async function publishSocial() {
+    if (!Settings.cloud.authenticated) return;
+    const incoming: (ReturnType<typeof describeUser> & { since?: string; })[] = [];
+    const outgoing: ReturnType<typeof describeUser>[] = [];
+    for (const [id, type] of RelationshipStore.getMutableRelationships()) {
+        if (type === RelationshipType.INCOMING_REQUEST) incoming.push({ ...describeUser(id), since: RelationshipStore.getSince(id) });
+        else if (type === RelationshipType.OUTGOING_REQUEST) outgoing.push(describeUser(id));
+    }
+    const messageRequests = [...MessageRequestStore.getMessageRequestChannelIds()].map(channelId => {
+        const c = ChannelStore.getChannel(channelId);
+        const last = MessageStore.getLastMessage(channelId);
+        const other = c?.recipients?.[0];
+        return { channelId, ...(other ? describeUser(other) : { id: "", username: c?.name ?? "Unknown", globalName: null, avatar: null }), preview: last?.content?.slice(0, 200) ?? "", at: last ? new Date(last.timestamp as unknown as string).getTime() : 0 };
+    });
+    await putCloudKey("social", {
+        friends: RelationshipStore.getFriendCount(),
+        blocked: RelationshipStore.getBlockedIDs().length,
+        incoming, outgoing, messageRequests,
+        updatedAt: Date.now(),
+    }).catch(() => { });
+}
+
+const socialDone = new Set<string>();
+async function applySocial(cmd: NonNullable<RemoteCommands["social"]>) {
+    const run = async (tag: string, fn: () => Promise<unknown>) => {
+        if (socialDone.has(tag)) return;
+        socialDone.add(tag);
+        try { await fn(); } catch (e) { logger.warn(`Dashboard social action ${tag} failed`, e); }
+    };
+    for (const id of cmd.accept ?? []) await run(`accept:${id}`, () => RestAPI.put({ url: `/users/@me/relationships/${id}`, body: {} }));
+    for (const id of cmd.deny ?? []) await run(`deny:${id}`, () => RestAPI.del({ url: `/users/@me/relationships/${id}` }));
+    for (const id of cmd.block ?? []) await run(`block:${id}`, () => RestAPI.put({ url: `/users/@me/relationships/${id}`, body: { type: RelationshipType.BLOCKED } }));
+    for (const id of cmd.acceptMessage ?? []) await run(`acceptMsg:${id}`, () => MessageRequestActions.acceptMessageRequest?.(id) ?? RestAPI.put({ url: `/channels/${id}/recipients/@me` }));
+    for (const id of cmd.denyMessage ?? []) await run(`denyMsg:${id}`, () => MessageRequestActions.rejectMessageRequest?.(id) ?? RestAPI.del({ url: `/channels/${id}` }));
+    setTimeout(publishSocial, 3000);
+}
+
 async function publishNotifications() {
     if (!Settings.cloud.authenticated) return;
     const log = await DataStore.get<any[]>("notification-log") ?? [];
@@ -238,6 +284,7 @@ interface RemoteCommands {
     snippets?: string;
     publicProfile?: boolean;
     plugins?: Record<string, boolean>;
+    social?: { accept?: string[]; deny?: string[]; block?: string[]; acceptMessage?: string[]; denyMessage?: string[]; };
 }
 
 let lastRemote = 0;
@@ -270,6 +317,7 @@ async function applyRemote(value: unknown) {
     if (typeof cmd.snippets === "string") (Settings.plugins.TextSnippets ??= { enabled: false }).snippets = cmd.snippets.slice(0, 8000);
     if (typeof cmd.publicProfile === "boolean") settings.store.publicProfile = cmd.publicProfile;
     if (cmd.plugins) for (const [name, on] of Object.entries(cmd.plugins)) if (typeof on === "boolean") togglePlugin(name, on);
+    if (cmd.social && typeof cmd.social === "object") await applySocial(cmd.social);
 
     await publishDevice();
 }
@@ -282,6 +330,8 @@ export default definePlugin({
     settings,
 
     flux: {
+        RELATIONSHIP_ADD() { setTimeout(publishSocial, 2000); },
+        RELATIONSHIP_REMOVE() { setTimeout(publishSocial, 2000); },
         MESSAGE_DELETE({ id, channelId }: { id: string; channelId: string; }) {
             if (!settings.store.uploadMessageLog || !isPluginEnabled("MessageLogger")) return;
             const m = MessageStore.getMessage(channelId, id);
@@ -301,8 +351,8 @@ export default definePlugin({
         messageLog = await DataStore.get<LoggedMessage[]>(LOG_KEY) ?? [];
         connect();
         SettingsStore.addGlobalChangeListener(onSettingChange);
-        publishTimer = setInterval(() => { publishMessageLog(); publishDevice(); publishNotifications(); }, 5 * 60_000);
-        setTimeout(() => { publishDevice(); publishNotifications(); }, 20_000);
+        publishTimer = setInterval(() => { publishMessageLog(); publishDevice(); publishNotifications(); publishSocial(); }, 5 * 60_000);
+        setTimeout(() => { publishDevice(); publishNotifications(); publishSocial(); }, 20_000);
         unregisterRemote = onCloudKey("remote", applyRemote);
         remoteTimer = setInterval(() => pullCloudKeys().catch(() => { }), 2 * 60_000);
         setTimeout(() => pullCloudKeys().catch(() => { }), 30_000);

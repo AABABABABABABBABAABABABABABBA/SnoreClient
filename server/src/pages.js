@@ -394,6 +394,7 @@ th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;
 <div class="item" data-panel="devices">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><rect x='3' y='4' width='18' height='12' rx='2'/><path d='M8 20h8M12 16v4'/></svg>"}Devices</div>
 <div class="item" data-panel="notifications">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M6 16V11a6 6 0 0 1 12 0v5l2 2H4Z'/><path d='M10 21h4'/></svg>"}Notifications</div>
 <div class="item" data-panel="ghost">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M5 21V11a7 7 0 0 1 14 0v10l-2.3-2-2.4 2-2.3-2-2.3 2-2.4-2Z'/><circle cx='9.5' cy='11' r='1'/><circle cx='14.5' cy='11' r='1'/></svg>"}Ghost pings</div>
+<div class="item" data-panel="friends">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><circle cx='9' cy='8' r='3.5'/><path d='M2.5 20a6.5 6.5 0 0 1 13 0'/><path d='M17 8v6M14 11h6'/></svg>"}Friends</div>
 <div class="item" data-panel="servers">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><circle cx='12' cy='12' r='9'/><path d='M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18'/></svg>"}Servers</div>
 <div class="item" data-panel="alerts">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M12 3v2M12 19v2M4 12H2M22 12h-2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4'/><circle cx='12' cy='12' r='4'/></svg>"}Alerts</div>
 <div class="item" data-panel="snippets">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M8 7h8M8 12h8M8 17h5'/><rect x='4' y='3' width='16' height='18' rx='2'/></svg>"}Snippets</div>
@@ -471,6 +472,14 @@ ${liveWidget()}
 <p id="ml-note">Logged by the MessageLogger plugin and uploaded by your client every five minutes. Turn it off under CloudPresence settings in the app.</p>
 <div class="row" style="margin:10px 0"><input type="search" id="ml-search" placeholder="Filter by user, channel or text…" style="max-width:420px"><span class="badge" id="ml-count"></span></div>
 <div id="ml-list" class="grid" style="grid-template-columns:1fr;gap:10px"><div class="card"><p>Loading…</p></div></div>
+</div>
+<div class="panel" id="panel-friends">
+<div class="eyebrow">Friends</div><h2>Requests &amp; <span class="hl">message requests</span></h2>
+<p id="fr-note">Accept or deny from here. The app carries it out within two minutes.</p>
+<div class="kpis" id="fr-kpis"></div>
+<h3>Incoming friend requests</h3><div id="fr-in" class="grid" style="grid-template-columns:1fr;gap:8px"></div>
+<h3 style="margin-top:18px">Message requests</h3><div id="fr-msg" class="grid" style="grid-template-columns:1fr;gap:8px"></div>
+<h3 style="margin-top:18px">Outgoing friend requests</h3><div id="fr-out" class="grid" style="grid-template-columns:1fr;gap:8px"></div>
 </div>
 <div class="panel" id="panel-servers">
 <div class="eyebrow">Servers</div><h2>Your <span class="hl">servers</span></h2>
@@ -576,6 +585,7 @@ ${liveWidget()}
     renderChart();
     renderControls();
     renderServers();
+    renderFriends();
     renderAlerts();
     renderSnippets();
     renderActivity();
@@ -584,6 +594,20 @@ ${liveWidget()}
     loadNews();
     $("pp-url").textContent = location.origin + "/u/" + u.id;
     $("sec-public").checked = !!((me.remote && "publicProfile" in me.remote) ? me.remote.publicProfile : me.device && me.device.publicProfile);
+  }
+  function renderFriends() {
+    const so = me.social || {};
+    const pend = (me.remote && me.remote.social) || {};
+    const has = (k, id) => (pend[k] || []).includes(id);
+    const av = u => u.avatar && u.id ? "<img src='https://cdn.discordapp.com/avatars/" + esc(u.id) + "/" + esc(u.avatar) + ".png?size=64' style='width:36px;height:36px;border-radius:50%'>" : "<div style='width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08)'></div>";
+    if (so.updatedAt) $("fr-note").textContent = "Last reported " + ago(so.updatedAt) + ". The app carries out your choice within two minutes.";
+    $("fr-kpis").innerHTML = [[so.friends ?? "–", "Friends"], [(so.incoming || []).length, "Incoming"], [(so.messageRequests || []).length, "Message requests"], [(so.outgoing || []).length, "Outgoing"], [so.blocked ?? "–", "Blocked"]].map(([v, l]) => "<div class='kpi'><strong>" + esc(v) + "</strong><small>" + l + "</small></div>").join("");
+    const row = (u, sub, btns) => "<div class='card pl'>" + av(u) + "<div class='t'><b>" + esc(u.globalName || u.username) + "</b> <span style='color:var(--muted);font-size:.85rem'>@" + esc(u.username) + "</span><small>" + esc(sub) + "</small></div><div class='row' style='margin:0;gap:6px'>" + btns + "</div></div>";
+    const b = (label, k, id, danger) => has(k, id) ? "<span class='badge'>pending</span>" : "<a class='btn" + (danger ? " danger" : "") + "' href='#' data-social='" + k + "' data-id='" + esc(id) + "' style='padding:6px 12px'>" + label + "</a>";
+    $("fr-in").innerHTML = (so.incoming || []).length ? so.incoming.map(u => row(u, u.since ? "sent " + ago(Date.parse(u.since)) : "", b("Accept", "accept", u.id) + b("Deny", "deny", u.id, true) + b("Block", "block", u.id, true))).join("") : "<div class='card'><p>" + (so.updatedAt ? "No incoming requests." : "The app hasn't reported yet.") + "</p></div>";
+    $("fr-msg").innerHTML = (so.messageRequests || []).length ? so.messageRequests.map(m => row(m, (m.preview || "(no text)") + (m.at ? " · " + ago(m.at) : ""), b("Accept", "acceptMessage", m.channelId) + b("Ignore", "denyMessage", m.channelId, true))).join("") : "<div class='card'><p>No message requests.</p></div>";
+    $("fr-out").innerHTML = (so.outgoing || []).length ? so.outgoing.map(u => row(u, "waiting for them", b("Cancel", "deny", u.id, true))).join("") : "<div class='card'><p>No outgoing requests.</p></div>";
+    document.querySelectorAll("[data-social]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); const cur = (me.remote && me.remote.social) || {}; const next = Object.assign({}, cur); next[a.dataset.social] = (cur[a.dataset.social] || []).concat(a.dataset.id); sendRemote({ social: next }).then(renderFriends); }));
   }
   function renderServers() {
     const list = (me.device && me.device.guilds) || [];
@@ -604,9 +628,9 @@ ${liveWidget()}
     const d = me.device || {}, r = me.remote || {};
     const v = "snippets" in r ? r.snippets : (d.snippets || "");
     $("sn-text").value = v;
-    $("sn-count").textContent = v.split("\n").filter(l => l.includes("=")).length + " snippets";
+    $("sn-count").textContent = v.split("\\n").filter(l => l.includes("=")).length + " snippets";
   }
-  $("sn-text").addEventListener("input", () => { $("sn-count").textContent = $("sn-text").value.split("\n").filter(l => l.includes("=")).length + " snippets"; });
+  $("sn-text").addEventListener("input", () => { $("sn-count").textContent = $("sn-text").value.split("\\n").filter(l => l.includes("=")).length + " snippets"; });
   $("sn-save").addEventListener("click", e => { e.preventDefault(); sendRemote({ snippets: $("sn-text").value }); });
   function renderActivity() {
     const h = (me.stats && me.stats.hourly) || [];

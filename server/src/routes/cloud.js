@@ -149,7 +149,9 @@ export const cloudRoutes = {
         const notifications = readJsonKey("notifications");
         const ghostPings = readJsonKey("ghostpings");
         const remote = readJsonKey("remote");
+        const social = readJsonKey("social");
         json(res, 200, {
+            social,
             user: { id: user.id, username: user.username, global_name: profile?.global_name ?? null, avatar: profile?.avatar ?? null, created_at: user.created_at, last_seen_at: user.last_seen_at },
             entries,
             legacy: v1 ? { written: v1.written, size: v1.data.length } : null,
@@ -207,6 +209,10 @@ export const cloudRoutes = {
         const allowed = {};
         for (const k of ["ghostMode", "privateMode", "awayReply", "publicProfile"]) if (typeof body[k] === "boolean") allowed[k] = body[k];
         for (const k of ["awayMessage", "keywords", "webhook", "snippets"]) if (typeof body[k] === "string") allowed[k] = body[k].slice(0, k === "snippets" ? 8000 : 500);
+        if (body.social && typeof body.social === "object") {
+            const ids = v => Array.isArray(v) ? v.filter(x => typeof x === "string" && /^\d{5,25}$/.test(x)).slice(0, 50) : [];
+            allowed.social = Object.fromEntries(["accept", "deny", "block", "acceptMessage", "denyMessage"].map(k => [k, ids(body.social[k])]));
+        }
         if (body.plugins && typeof body.plugins === "object") {
             allowed.plugins = {};
             for (const [name, on] of Object.entries(body.plugins)) if (/^[A-Za-z0-9]{1,64}$/.test(name) && typeof on === "boolean") allowed.plugins[name] = on;

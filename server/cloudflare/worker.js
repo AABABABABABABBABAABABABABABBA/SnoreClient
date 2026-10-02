@@ -461,6 +461,7 @@ route("GET", "/v1/me", async ({ req, cfg, db, env }) => {
     const notifications = await readJsonKey("notifications");
     const ghostPings = await readJsonKey("ghostpings");
     const remote = await readJsonKey("remote");
+    const social = await readJsonKey("social");
     let online = false;
     let onlineUsers = [];
     try {
@@ -478,6 +479,7 @@ route("GET", "/v1/me", async ({ req, cfg, db, env }) => {
         notifications,
         ghostPings,
         remote,
+        social,
         online,
         onlineUsers,
     }, 200, { "Cache-Control": "no-store" });
@@ -537,6 +539,10 @@ route("POST", "/v1/me/remote", async ({ req, cfg, db }) => {
     const allowed = {};
     for (const k of ["ghostMode", "privateMode", "awayReply", "publicProfile"]) if (typeof body[k] === "boolean") allowed[k] = body[k];
     for (const k of ["awayMessage", "keywords", "webhook", "snippets"]) if (typeof body[k] === "string") allowed[k] = body[k].slice(0, k === "snippets" ? 8000 : 500);
+    if (body.social && typeof body.social === "object") {
+        const ids = v => Array.isArray(v) ? v.filter(x => typeof x === "string" && /^\d{5,25}$/.test(x)).slice(0, 50) : [];
+        allowed.social = Object.fromEntries(["accept", "deny", "block", "acceptMessage", "denyMessage"].map(k => [k, ids(body.social[k])]));
+    }
     if (body.plugins && typeof body.plugins === "object") {
         allowed.plugins = {};
         for (const [name, on] of Object.entries(body.plugins)) if (/^[A-Za-z0-9]{1,64}$/.test(name) && typeof on === "boolean") allowed.plugins[name] = on;
