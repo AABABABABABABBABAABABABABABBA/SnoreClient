@@ -461,6 +461,20 @@ async function deleteV1() {
     });
 }
 
+/** Upload a single JSON value under its own cloud key, independent of the settings sync direction. */
+export async function putCloudKey(key: string, value: unknown) {
+    if (!Settings.cloud.authenticated) return false;
+    if (await getApiVersion() !== "v2") return false;
+    const bytes = new TextEncoder().encode(JSON.stringify(value));
+    const checksum = await computeChecksum(bytes);
+    const manifest = await getLocalManifest();
+    if (manifest.find(e => e.key === key)?.checksum === checksum) return true;
+    const response = await doSyncV2([{ key, value: toBase64(bytes), checksum }], manifest);
+    if (!response) return false;
+    await saveLocalManifest(response.server_manifest);
+    return true;
+}
+
 export function shouldCloudSync(direction: "push" | "pull") {
     const localDirection = localStorage.Vencord_cloudSyncDirection;
     return localDirection === direction || localDirection === "both";

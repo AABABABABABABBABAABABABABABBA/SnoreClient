@@ -21,3 +21,10 @@ CREATE TABLE IF NOT EXISTS data_v2 (
     updated_at INTEGER NOT NULL,
     PRIMARY KEY (user_id, key)
 );
+
+CREATE TABLE IF NOT EXISTS profiles (
+    user_id TEXT PRIMARY KEY,
+    avatar TEXT,
+    global_name TEXT,
+    updated_at INTEGER NOT NULL
+);

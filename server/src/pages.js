@@ -39,7 +39,7 @@ nav .brand{font-weight:700;font-size:.98rem;margin-right:14px;letter-spacing:-.0
 nav .links{display:flex;gap:4px;flex:1}
 nav .links a{padding:7px 12px;border-radius:999px;font-size:.88rem;color:var(--muted);font-weight:500}
 nav .links a:hover{color:var(--fg);background:rgba(255,255,255,.06)}
-nav .cta{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--card-border);font-size:.88rem;font-weight:600}
+nav .cta{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--card-border);font-size:.88rem;font-weight:600}
 nav .cta:hover{background:rgba(255,255,255,.14);color:#fff}
 h1{font-size:clamp(2.4rem,6vw,4.2rem);line-height:1.04;letter-spacing:-.035em;margin:0 0 14px;font-weight:800}
 h1 em{font-style:italic;font-weight:300;letter-spacing:-.02em}
@@ -120,7 +120,8 @@ footer a{color:var(--muted)}
 <nav>
 <img src="/assets/icon.svg" alt="">
 <a class="brand" href="/">${escapeHtml(config.siteName)}</a>
-<div class="links"><a href="/plugins">Plugins</a><a href="/accounts">Accounts</a><a href="/download">Download</a><a href="/privacy">Privacy</a><a href="https://github.com/${escapeHtml(config.githubRepo)}">GitHub</a></div>
+<div class="links"><a href="/plugins">Plugins</a><a href="/dashboard">Dashboard</a><a href="/accounts">Accounts</a><a href="/download">Download</a><a href="/privacy">Privacy</a><a href="https://github.com/${escapeHtml(config.githubRepo)}">GitHub</a></div>
+<a class="cta" href="/dashboard" style="margin-right:6px;background:transparent">Log in</a>
 <a class="cta" href="/download"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Download</a>
 </nav>
 ${body}
@@ -339,5 +340,121 @@ ${a.data_count} synced ${a.data_count === 1 ? "entry" : "entries"}</p>
 <p style="margin-top:18px">Raw data: <a href="/v1/accounts"><code>GET /v1/accounts</code></a> · live: <a href="/v1/live.json"><code>GET /v1/live.json</code></a> · <code>wss://${escapeHtml(new URL(config.publicUrl).host)}/v1/live</code></p>
 ${liveWidget()}`);
 
-return { page, landing, privacy, download, plugins, plugin, accounts };
+const dashboard = user => shell(`Dashboard · ${config.siteName}`, `
+<style>
+.dash{display:grid;grid-template-columns:260px 1fr;gap:20px;margin-top:28px}
+@media (max-width:820px){.dash{grid-template-columns:1fr}}
+.side{position:sticky;top:90px;align-self:start}
+.side .card{padding:18px}
+.side nav-item,.side .item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:var(--muted);font-weight:500;cursor:pointer}
+.side .item:hover,.side .item.active{background:rgba(255,255,255,.06);color:var(--fg)}
+.side .item svg{width:18px;height:18px}
+.me{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.me img{width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,.12)}
+.me b{display:block}
+.me small{color:var(--muted)}
+.panel{display:none}
+.panel.active{display:block}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:14px 0 20px}
+.kpi{background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:16px}
+.kpi small{display:block;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
+.kpi strong{font-size:1.5rem;letter-spacing:-.02em;color:#cfe0ff}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--card-border)}
+th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
+.pill-ok{color:var(--ok)}.pill-off{color:var(--muted)}
+.danger{border-color:rgba(244,114,182,.35)}
+.btn.danger{background:rgba(244,114,182,.12);border-color:rgba(244,114,182,.4);color:#fbcfe8}
+.btn.danger:hover{background:rgba(244,114,182,.22);color:#fff}
+</style>
+<div class="dash">
+<aside class="side">
+<div class="card">
+<div class="me"><img id="me-avatar" src="/assets/icon.png" alt=""><div><b id="me-name">${escapeHtml(user.username)}</b><small>@${escapeHtml(user.username)}</small></div></div>
+<div class="item active" data-panel="overview">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><rect x='3' y='3' width='8' height='8' rx='2'/><rect x='13' y='3' width='8' height='5' rx='2'/><rect x='13' y='10' width='8' height='11' rx='2'/><rect x='3' y='13' width='8' height='8' rx='2'/></svg>"}Overview</div>
+<div class="item" data-panel="data">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M17.5 19a4.5 4.5 0 0 0 .4-9A7 7 0 0 0 4.3 12.5 3.5 3.5 0 0 0 5.5 19Z'/></svg>"}Cloud data</div>
+<div class="item" data-panel="stats">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M4 20V10m6 10V4m6 16v-7m4 7H2'/></svg>"}Statistics</div>
+<div class="item" data-panel="account">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><circle cx='12' cy='8' r='4'/><path d='M4 21a8 8 0 0 1 16 0'/></svg>"}Account</div>
+<div style="border-top:1px solid var(--card-border);margin:10px 0"></div>
+<a class="item" href="/logout">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M10 17l5-5-5-5M15 12H3M21 3v18'/></svg>"}Log out</a>
+</div>
+</aside>
+<section>
+<div class="panel active" id="panel-overview">
+<div class="eyebrow">Dashboard</div><h2>Welcome back, <span class="hl" id="hello-name">${escapeHtml(user.username)}</span></h2>
+<p>Your ${escapeHtml(config.siteName)} cloud at a glance.</p>
+<div class="kpis">
+<div class="kpi"><small>Status</small><strong id="k-online">…</strong></div>
+<div class="kpi"><small>Last sync</small><strong id="k-sync">…</strong></div>
+<div class="kpi"><small>Synced entries</small><strong id="k-entries">…</strong></div>
+<div class="kpi"><small>Cloud storage</small><strong id="k-size">…</strong></div>
+<div class="kpi"><small>Connected since</small><strong id="k-since">…</strong></div>
+</div>
+${liveWidget()}
+</div>
+<div class="panel" id="panel-data">
+<div class="eyebrow">Cloud data</div><h2>What's <span class="hl">synced</span></h2>
+<p>Each entry is an opaque blob uploaded by your client. Versions go up on every change.</p>
+<div class="card" style="padding:6px 0"><table><thead><tr><th>Key</th><th>Version</th><th>Size</th><th>Updated</th></tr></thead><tbody id="data-rows"><tr><td colspan="4">Loading…</td></tr></tbody></table></div>
+<div class="row"><a class="btn" id="dl-json" href="#">Download as JSON</a></div>
+</div>
+<div class="panel" id="panel-stats">
+<div class="eyebrow">Statistics</div><h2>Your <span class="hl">numbers</span></h2>
+<p id="stats-note">Statistics are published by the SnoreClient app every few minutes while Cloud Integration is on.</p>
+<div class="kpis" id="stats-kpis"></div>
+<div class="card" id="stats-channels" style="display:none"><h3>Busiest channels</h3><div class="bars" id="stats-bars"></div></div>
+</div>
+<div class="panel" id="panel-account">
+<div class="eyebrow">Account</div><h2>Manage your <span class="hl">account</span></h2>
+<div class="card"><h3>Discord</h3><p>User id <code id="acc-id">${escapeHtml(user.id)}</code>. Sessions on this website last 30 days.</p></div>
+<div class="card danger" style="margin-top:14px"><h3>Danger zone</h3><p>Deleting cloud data removes every synced entry but keeps the account connected. Disconnecting removes everything and signs every device out of the cloud.</p>
+<div class="row"><a class="btn danger" id="btn-delete" href="#">Delete cloud data</a><a class="btn danger" id="btn-disconnect" href="#">Disconnect account</a></div></div>
+</div>
+</section>
+</div>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const fmtDate = t => t ? new Date(t).toLocaleString() : "never";
+  const ago = t => { if (!t) return "never"; const s = Math.floor((Date.now() - t) / 1000); return s < 60 ? "just now" : s < 3600 ? Math.floor(s / 60) + " min ago" : s < 86400 ? Math.floor(s / 3600) + " h ago" : Math.floor(s / 86400) + " d ago"; };
+  const kb = n => n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : n > 1024 ? (n / 1024).toFixed(1) + " KB" : n + " B";
+  const hms = s => { const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60); return h ? h + "h " + m + "m" : m + "m"; };
+  document.querySelectorAll(".item[data-panel]").forEach(el => el.addEventListener("click", () => {
+    document.querySelectorAll(".item[data-panel]").forEach(i => i.classList.toggle("active", i === el));
+    document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + el.dataset.panel));
+  }));
+  let me = null;
+  async function load() {
+    const r = await fetch("/v1/me"); if (r.status === 401) { location.href = "/login"; return; }
+    me = await r.json();
+    const u = me.user;
+    if (u.avatar) $("me-avatar").src = "https://cdn.discordapp.com/avatars/" + u.id + "/" + u.avatar + ".png?size=96";
+    $("me-name").textContent = u.global_name || u.username; $("hello-name").textContent = u.global_name || u.username;
+    $("k-online").innerHTML = me.online ? '<span class="pill-ok">Online</span>' : '<span class="pill-off">Offline</span>';
+    $("k-sync").textContent = ago(u.last_seen_at);
+    $("k-entries").textContent = me.entries.length + (me.legacy ? " + legacy" : "");
+    $("k-size").textContent = kb(me.entries.reduce((a, e) => a + e.size, 0) + (me.legacy ? me.legacy.size : 0));
+    $("k-since").textContent = new Date(u.created_at).toLocaleDateString();
+    $("data-rows").innerHTML = me.entries.map(e => "<tr><td><code>" + esc(e.key) + "</code></td><td>v" + e.version + "</td><td>" + kb(e.size) + "</td><td>" + esc(fmtDate(e.updated_at)) + "</td></tr>").join("") + (me.legacy ? "<tr><td><code>settings (v1)</code></td><td>–</td><td>" + kb(me.legacy.size) + "</td><td>" + esc(fmtDate(me.legacy.written)) + "</td></tr>" : "") || "<tr><td colspan='4'>Nothing synced yet. Turn on Settings Sync in the app.</td></tr>";
+    const s = me.stats;
+    if (s) {
+      $("stats-note").textContent = "Last published " + ago(s.updatedAt) + ".";
+      const num = n => Number(n || 0).toLocaleString();
+      const tiles = [[num(s.sent), "Messages sent"], [num(s.received), "Messages seen"], [num(s.mentions), "Times pinged"], [hms(s.voiceSeconds || 0), "Time in voice"], [hms(s.uptimeSeconds || 0), "Discord open"], [s.sessions, "Sessions"], [s.pluginsEnabled, "Plugins on"]];
+      $("stats-kpis").innerHTML = tiles.map(([v, l]) => "<div class='kpi'><strong>" + esc(v ?? 0) + "</strong><small>" + l + "</small></div>").join("");
+      const top = Object.entries(s.busiestChannels || {}).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      if (top.length) { $("stats-channels").style.display = ""; const max = top[0][1]; $("stats-bars").innerHTML = top.map(([n, c]) => "<div class='bar-row'>" + esc(n) + " <i style='max-width:" + Math.round(c / max * 100) + "%'></i> " + num(c) + "</div>").join(""); }
+    } else {
+      $("stats-kpis").innerHTML = "<div class='kpi'><strong>–</strong><small>No statistics yet</small></div>";
+    }
+  }
+  $("dl-json").addEventListener("click", e => { e.preventDefault(); const b = new Blob([JSON.stringify(me, null, 2)], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "snoreclient-cloud.json"; a.click(); });
+  $("btn-delete").addEventListener("click", async e => { e.preventDefault(); if (!confirm("Delete all synced data from the cloud?")) return; await fetch("/v1/me/delete", { method: "POST" }); load(); });
+  $("btn-disconnect").addEventListener("click", async e => { e.preventDefault(); if (!confirm("Disconnect this account and delete everything?")) return; await fetch("/v1/me/disconnect", { method: "POST" }); location.href = "/"; });
+  load();
+})();
+</script>`, { wide: true });
+
+return { page, landing, privacy, download, plugins, plugin, accounts, dashboard };
 }

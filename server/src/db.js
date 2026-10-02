@@ -32,6 +32,13 @@ db.exec(`
         data BLOB NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS profiles (
+        user_id TEXT PRIMARY KEY,
+        avatar TEXT,
+        global_name TEXT,
+        updated_at INTEGER NOT NULL
+    );
+
     -- v2 protocol: keyed values with versions and checksums
     CREATE TABLE IF NOT EXISTS data_v2 (
         user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -75,6 +82,20 @@ const stmts = {
         ON CONFLICT(user_id, key) DO UPDATE SET version = data_v2.version + 1, checksum = excluded.checksum, value = excluded.value, updated_at = excluded.updated_at
     `),
     deleteV2: db.prepare("DELETE FROM data_v2 WHERE user_id = ? AND key = ?"),
+    entriesV2: db.prepare("SELECT key, version, checksum, length(value) AS size, updated_at FROM data_v2 WHERE user_id = ? ORDER BY key"),
+    deleteAllV2: db.prepare("DELETE FROM data_v2 WHERE user_id = ?"),
+    upsertProfile: db.prepare(`
+        INSERT INTO profiles (user_id, avatar, global_name, updated_at) VALUES (?, ?, ?, ?)
+        ON CONFLICT(user_id) DO UPDATE SET avatar = excluded.avatar, global_name = excluded.global_name, updated_at = excluded.updated_at
+    `),
+    getProfile: db.prepare("SELECT avatar, global_name FROM profiles WHERE user_id = ?"),
+    deleteProfile: db.prepare("DELETE FROM profiles WHERE user_id = ?"),
+};
+
+export const profiles = {
+    upsert: (userId, avatar, globalName) => stmts.upsertProfile.run(userId, avatar ?? null, globalName ?? null, Date.now()),
+    get: userId => stmts.getProfile.get(userId),
+    delete: userId => stmts.deleteProfile.run(userId),
 };
 
 export const users = {
@@ -109,6 +130,8 @@ export const dataV2 = {
         return stmts.getV2.get(userId, key);
     },
     delete: (userId, key) => stmts.deleteV2.run(userId, key).changes > 0,
+    entries: userId => stmts.entriesV2.all(userId).map(e => ({ ...e, size: Number(e.size) })),
+    deleteAll: userId => stmts.deleteAllV2.run(userId),
 };
 
 export const transaction = fn => {

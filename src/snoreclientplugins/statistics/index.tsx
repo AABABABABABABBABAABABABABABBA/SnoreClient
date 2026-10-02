@@ -5,6 +5,9 @@
  */
 
 import * as DataStore from "@api/DataStore";
+import { isPluginEnabled } from "@api/PluginManager";
+import { Settings } from "@api/Settings";
+import { putCloudKey } from "@api/SettingsSync/cloudSync";
 import { Button } from "@components/Button";
 import { Heading } from "@components/Heading";
 import { LogIcon } from "@components/Icons";
@@ -17,6 +20,8 @@ import { removeFromArray } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { Message } from "@vencord/discord-types";
 import { ChannelStore, SelectedChannelStore, useEffect, UserStore, useState } from "@webpack/common";
+
+import Plugins from "~plugins";
 
 const STORE_KEY = "Statistics_totals";
 const ENTRY_KEY = "snoreclient_statistics";
@@ -37,7 +42,31 @@ const EMPTY: Totals = { sent: 0, received: 0, dmsReceived: 0, mentions: 0, voice
 
 let totals: Totals = { ...EMPTY };
 let timer: ReturnType<typeof setInterval> | undefined;
+let publishTimer: ReturnType<typeof setInterval> | undefined;
 let dirty = false;
+
+/** Push a compact copy to the cloud so the web dashboard can show it. Channel ids are replaced by names. */
+async function publish() {
+    if (!Settings.cloud.authenticated) return;
+    const busiest: Record<string, number> = {};
+    for (const [id, n] of Object.entries(totals.busiestChannels).sort((a, b) => b[1] - a[1]).slice(0, 8)) {
+        const c = ChannelStore.getChannel(id);
+        busiest[c ? (c.isDM() ? "DM" : `#${c.name}`) : "unknown"] = (busiest[c ? (c.isDM() ? "DM" : `#${c.name}`) : "unknown"] ?? 0) + n;
+    }
+    await putCloudKey("stats", {
+        sent: totals.sent,
+        received: totals.received,
+        dmsReceived: totals.dmsReceived,
+        mentions: totals.mentions,
+        voiceSeconds: totals.voiceSeconds,
+        uptimeSeconds: totals.uptimeSeconds,
+        sessions: totals.sessions,
+        firstRun: totals.firstRun,
+        pluginsEnabled: Object.keys(Plugins).filter(isPluginEnabled).length,
+        busiestChannels: busiest,
+        updatedAt: Date.now(),
+    }).catch(() => { });
+}
 
 function save() {
     if (!dirty) return;
@@ -142,11 +171,14 @@ export default definePlugin({
         totals.sessions++;
         dirty = true;
         timer = setInterval(tick, 10_000);
+        publishTimer = setInterval(publish, 10 * 60_000);
+        setTimeout(publish, 60_000);
         SettingsPlugin.customEntries.push({ key: ENTRY_KEY, title: "Statistics", Component: StatisticsTab, Icon: LogIcon });
     },
 
     stop() {
         clearInterval(timer);
+        clearInterval(publishTimer);
         save();
         removeFromArray(SettingsPlugin.customEntries, e => e.key === ENTRY_KEY);
     },

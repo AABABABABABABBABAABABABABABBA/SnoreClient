@@ -100,3 +100,25 @@ test("accounts list", async () => {
     assert.equal(body.accounts[0].data_count, 0);
     assert.equal((await call("/accounts")).status, 200);
 });
+
+test("web dashboard session", async () => {
+    assert.equal((await call("/v1/me")).status, 401);
+    assert.equal((await call("/dashboard", { redirect: "manual" })).status, 302);
+    const login = await call("/login", { redirect: "manual" });
+    assert.equal(login.status, 302);
+    assert.ok(login.headers.get("location").includes("state=web"));
+
+    await DB.prepare("INSERT INTO users VALUES (?, ?, ?, ?, ?)").bind("423456789012345678", "dash", "00", 1, 2).run();
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey("raw", enc.encode("x:snore-session"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const payload = `423456789012345678.${Date.now() + 60_000}`;
+    const sig = new Uint8Array(await crypto.subtle.sign("HMAC", key, enc.encode(payload)));
+    const b64url = btoa(String.fromCharCode(...sig)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const cookie = `snore_session=${payload}.${b64url}`;
+    const me = await call("/v1/me", { headers: { Cookie: cookie } });
+    assert.equal(me.status, 200);
+    assert.equal((await me.json()).user.username, "dash");
+    assert.equal((await call("/dashboard", { headers: { Cookie: cookie } })).status, 200);
+    assert.equal((await call("/v1/me/disconnect", { method: "POST", headers: { Cookie: cookie } })).status, 200);
+    assert.equal((await call("/v1/me", { headers: { Cookie: cookie } })).status, 401);
+});

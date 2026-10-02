@@ -117,3 +117,27 @@ test("accounts list", async () => {
     assert.ok(body.accounts.some(a => a.id === "223456789012345678" && a.username === "second" && typeof a.data_count === "number"));
     assert.equal((await fetch(`${base}/accounts`)).status, 200);
 });
+
+test("web dashboard session", async () => {
+    const { createHash, createHmac } = await import("node:crypto");
+    assert.equal((await fetch(`${base}/v1/me`)).status, 401);
+    assert.equal((await fetch(`${base}/dashboard`, { redirect: "manual" })).status, 302);
+    const login = await fetch(`${base}/login`, { redirect: "manual" });
+    assert.equal(login.status, 302);
+    assert.ok(login.headers.get("location").includes("state=web"));
+
+    const { users } = await import("../src/db.js");
+    const { hashSecret } = await import("../src/auth.js");
+    users.upsert("423456789012345678", "dash", hashSecret("d"));
+    const key = createHash("sha256").update("x:snore-session").digest();
+    const payload = `423456789012345678.${Date.now() + 60_000}`;
+    const cookie = `snore_session=${payload}.${createHmac("sha256", key).update(payload).digest("base64url")}`;
+    const me = await fetch(`${base}/v1/me`, { headers: { Cookie: cookie } });
+    assert.equal(me.status, 200);
+    const body = await me.json();
+    assert.equal(body.user.username, "dash");
+    assert.deepEqual(body.entries, []);
+    assert.equal((await fetch(`${base}/dashboard`, { headers: { Cookie: cookie } })).status, 200);
+    assert.equal((await fetch(`${base}/v1/me/disconnect`, { method: "POST", headers: { Cookie: cookie } })).status, 200);
+    assert.equal((await fetch(`${base}/v1/me`, { headers: { Cookie: cookie } })).status, 401);
+});

@@ -44,6 +44,33 @@ const newSecret = () => {
     return b64.encode(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 };
 
+const b64url = {
+    encode: bytes => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
+    decode: str => Uint8Array.from(atob(str.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)),
+};
+
+async function sessionKey(cfg) {
+    return crypto.subtle.importKey("raw", enc.encode(cfg.discordClientSecret + ":snore-session"), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
+}
+
+async function makeSession(cfg, userId) {
+    const payload = `${userId}.${Date.now() + 30 * 86400_000}`;
+    const sig = new Uint8Array(await crypto.subtle.sign("HMAC", await sessionKey(cfg), enc.encode(payload)));
+    return `${payload}.${b64url.encode(sig)}`;
+}
+
+async function readSession(cfg, req) {
+    const cookie = req.headers.get("Cookie") || "";
+    const m = cookie.match(/(?:^|;\s*)snore_session=([^;]+)/);
+    if (!m) return null;
+    const [userId, exp, sig] = m[1].split(".");
+    if (!userId || !exp || !sig || Number(exp) < Date.now()) return null;
+    const ok = await crypto.subtle.verify("HMAC", await sessionKey(cfg), b64url.decode(sig), enc.encode(`${userId}.${exp}`)).catch(() => false);
+    return ok ? userId : null;
+}
+
+const sessionCookie = (value, maxAge) => `snore_session=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+
 function readConfig(env) {
     const publicUrl = (env.PUBLIC_URL || "").replace(/\/+$/, "");
     if (!publicUrl || !env.DISCORD_CLIENT_ID || !env.DISCORD_CLIENT_SECRET)
@@ -227,8 +254,22 @@ route("GET", "/v1/oauth/callback", async ({ req, url, cfg, db, pages }) => {
         return html(pages.page("Not allowed", "<p>This SnoreClient server is private and your account is not on its allow list.</p>"), 403);
     }
 
-    const secret = newSecret();
     const now = Date.now();
+    await db.prepare(`
+        INSERT INTO profiles (user_id, avatar, global_name, updated_at) VALUES (?, ?, ?, ?)
+        ON CONFLICT(user_id) DO UPDATE SET avatar = excluded.avatar, global_name = excluded.global_name, updated_at = excluded.updated_at
+    `).bind(user.id, user.avatar ?? null, user.global_name ?? null, now).run();
+
+    if (url.searchParams.get("state") === "web") {
+        const existing = await db.prepare("SELECT id FROM users WHERE id = ?").bind(user.id).first();
+        if (!existing) {
+            return html(pages.page("Not connected yet", `<p>Hi <b>${escapeHtml(user.username)}</b>. This Discord account hasn't been connected from the SnoreClient app yet.</p><p>Open Discord, go to <b>Settings → SnoreClient → Cloud</b>, turn on Cloud Integration, then come back here.</p><p><a class="btn" href="/dashboard">Try again</a></p>`), 403);
+        }
+        const session = await makeSession(cfg, user.id);
+        return new Response(null, { status: 302, headers: { Location: "/dashboard", "Set-Cookie": sessionCookie(session, 30 * 86400) } });
+    }
+
+    const secret = newSecret();
     await db.prepare(`
         INSERT INTO users (id, username, secret_hash, created_at, last_seen_at) VALUES (?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET username = excluded.username, secret_hash = excluded.secret_hash, last_seen_at = excluded.last_seen_at
@@ -365,6 +406,80 @@ route("DELETE", "/v2/data/:key", async ({ req, db, params }) => {
     if (!KEY_RE.test(key)) throw new HttpError(400, "Invalid key");
     const { meta } = await db.prepare("DELETE FROM data_v2 WHERE user_id = ? AND key = ?").bind(user.id, key).run();
     return empty(meta.changes > 0 ? 204 : 404);
+});
+
+async function requireSession(req, cfg, db) {
+    const id = await readSession(cfg, req);
+    if (!id) throw new HttpError(401, "Not logged in");
+    const user = await db.prepare("SELECT * FROM users WHERE id = ?").bind(id).first();
+    if (!user) throw new HttpError(401, "Not connected");
+    return user;
+}
+
+route("GET", "/login", ({ cfg }) => {
+    const u = new URL("https://discord.com/oauth2/authorize");
+    u.searchParams.set("client_id", cfg.discordClientId);
+    u.searchParams.set("redirect_uri", cfg.redirectUri);
+    u.searchParams.set("response_type", "code");
+    u.searchParams.set("scope", "identify");
+    u.searchParams.set("state", "web");
+    u.searchParams.set("prompt", "none");
+    return Response.redirect(u.toString(), 302);
+});
+
+route("GET", "/logout", () => new Response(null, { status: 302, headers: { Location: "/", "Set-Cookie": sessionCookie("", 0) } }));
+
+route("GET", "/dashboard", async ({ req, cfg, db, pages }) => {
+    const id = await readSession(cfg, req);
+    if (!id) return Response.redirect(`${cfg.publicUrl}/login`, 302);
+    const user = await db.prepare("SELECT id, username FROM users WHERE id = ?").bind(id).first();
+    if (!user) return Response.redirect(`${cfg.publicUrl}/login`, 302);
+    return html(pages.dashboard(user));
+});
+
+route("GET", "/v1/me", async ({ req, cfg, db, env }) => {
+    const envRef = env;
+    const user = await requireSession(req, cfg, db);
+    const profile = await db.prepare("SELECT avatar, global_name FROM profiles WHERE user_id = ?").bind(user.id).first();
+    const { results: entries } = await db.prepare("SELECT key, version, checksum, length(value) AS size, updated_at FROM data_v2 WHERE user_id = ? ORDER BY key").bind(user.id).all();
+    const v1 = await db.prepare("SELECT written, length(data) AS size FROM settings_v1 WHERE user_id = ?").bind(user.id).first();
+    const statsRow = await db.prepare("SELECT value FROM data_v2 WHERE user_id = ? AND key = 'stats'").bind(user.id).first();
+    let stats = null;
+    if (statsRow) {
+        try { stats = JSON.parse(new TextDecoder().decode(b64.decode(statsRow.value))); } catch { }
+    }
+    let online = false;
+    try {
+        const snap = await (await hub(envRef).fetch("https://live/snapshot")).json();
+        online = snap.online.some(u => u.id === user.id);
+    } catch { }
+    return json({
+        user: { id: user.id, username: user.username, global_name: profile?.global_name ?? null, avatar: profile?.avatar ?? null, created_at: user.created_at, last_seen_at: user.last_seen_at },
+        entries: entries.map(e => ({ ...e, size: Math.round(Number(e.size) * 0.75) })),
+        legacy: v1 ? { written: v1.written, size: Math.round(Number(v1.size) * 0.75) } : null,
+        stats,
+        online,
+    }, 200, { "Cache-Control": "no-store" });
+});
+
+route("POST", "/v1/me/delete", async ({ req, cfg, db }) => {
+    const user = await requireSession(req, cfg, db);
+    await db.batch([
+        db.prepare("DELETE FROM data_v2 WHERE user_id = ?").bind(user.id),
+        db.prepare("DELETE FROM settings_v1 WHERE user_id = ?").bind(user.id),
+    ]);
+    return json({ ok: true });
+});
+
+route("POST", "/v1/me/disconnect", async ({ req, cfg, db }) => {
+    const user = await requireSession(req, cfg, db);
+    await db.batch([
+        db.prepare("DELETE FROM data_v2 WHERE user_id = ?").bind(user.id),
+        db.prepare("DELETE FROM settings_v1 WHERE user_id = ?").bind(user.id),
+        db.prepare("DELETE FROM profiles WHERE user_id = ?").bind(user.id),
+        db.prepare("DELETE FROM users WHERE id = ?").bind(user.id),
+    ]);
+    return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "Content-Type": "application/json", "Set-Cookie": sessionCookie("", 0) } });
 });
 
 route("GET", "/", async ({ db, pages, cfg }) => {
