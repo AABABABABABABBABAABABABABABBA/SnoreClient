@@ -35,7 +35,7 @@ import { debounce } from "@shared/debounce";
 import { IS_WINDOWS } from "@utils/constants";
 import { createAndAppendStyle } from "@utils/css";
 import { StartAt } from "@utils/types";
-import { SettingsRouter } from "@webpack/common";
+import { SelectedChannelStore, SettingsRouter } from "@webpack/common";
 
 import { get as dsGet } from "./api/DataStore";
 import { popNotice, showNotice } from "./api/Notices";
@@ -120,6 +120,29 @@ async function syncSettings() {
 }
 
 let notifiedForUpdatesThisSession = false;
+let pendingRestart = false;
+
+function isSafeToRestart() {
+    if (SelectedChannelStore.getVoiceChannelId()) return false;
+    if (document.hasFocus()) return false;
+    const active = document.activeElement;
+    if (active && (active.tagName === "TEXTAREA" || (active as HTMLElement).isContentEditable)) return false;
+    return true;
+}
+
+// Restart to apply a downloaded update once the user is away: not in a call, window unfocused, nothing being typed
+function scheduleAutoRestart() {
+    if (pendingRestart) return;
+    pendingRestart = true;
+
+    const tryRestart = () => {
+        if (!Settings.autoRestart || !isSafeToRestart()) return;
+        clearInterval(timer);
+        UpdateLogger.info("Restarting to apply the update");
+        relaunch();
+    };
+    const timer = setInterval(tryRestart, 60_000);
+}
 
 async function runUpdateCheck() {
     if (IS_UPDATER_DISABLED) return;
@@ -142,12 +165,16 @@ async function runUpdateCheck() {
 
         if (Settings.autoUpdate) {
             await update();
+            if (IS_DISCORD_DESKTOP) VencordNative.tray.setUpdateState(false);
+            if (Settings.autoRestart) scheduleAutoRestart();
             if (Settings.autoUpdateNotification) {
                 if (notifiedForUpdatesThisSession) return;
                 notifiedForUpdatesThisSession = true;
 
                 showNotice(
-                    "SnoreClient has been updated!",
+                    Settings.autoRestart
+                        ? "SnoreClient has been updated! It will restart on its own once you are away, or restart now."
+                        : "SnoreClient has been updated!",
                     "Restart",
                     relaunch
                 );
@@ -209,10 +236,10 @@ async function init() {
     if (!IS_DEV && !IS_WEB && !IS_UPDATER_DISABLED) {
         runUpdateCheck();
 
-        // this tends to get really annoying, so only do this if the user has auto-update without notification enabled
-        if (Settings.autoUpdate && !Settings.autoUpdateNotification) {
-            setInterval(runUpdateCheck, 1000 * 60 * 30); // 30 minutes
-        }
+        // keep checking while Discord stays open so updates land without a manual restart
+        setInterval(() => {
+            if (Settings.autoUpdate) runUpdateCheck();
+        }, 1000 * 60 * 30);
     }
 
     if (IS_DEV) {

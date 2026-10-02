@@ -69,7 +69,7 @@ function EquibopSection() {
 }
 
 function Updater() {
-    const settings = useSettings(["autoUpdate", "autoUpdateNotification"]);
+    const settings = useSettings(["autoUpdate", "autoUpdateNotification", "autoRestart"]);
 
     const [repo, err, repoPending] = useAwaiter(getRepo, { fallbackValue: "Loading..." });
 
@@ -104,6 +104,14 @@ function Updater() {
                     description="Receive a notification when SnoreClient finishes downloading an update in the background, so you know when to restart Discord."
                     value={settings.autoUpdateNotification}
                     onChange={(v: boolean) => settings.autoUpdateNotification = v}
+                    disabled={!settings.autoUpdate}
+                    hideBorder
+                />
+                <FormSwitch
+                    title="Restart automatically when you are away"
+                    description="After an update downloads, Discord restarts on its own the next time you are not in a call, not typing, and the window is in the background. Until then nothing changes."
+                    value={settings.autoRestart}
+                    onChange={(v: boolean) => settings.autoRestart = v}
                     disabled={!settings.autoUpdate}
                     hideBorder
                 />
