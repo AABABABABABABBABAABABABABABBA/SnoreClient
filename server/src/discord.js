@@ -20,7 +20,17 @@ export async function exchangeCode(code) {
         }),
     });
 
-    if (!res.ok) throw new Error(`Discord token exchange failed (${res.status}): ${await res.text()}`);
+    if (!res.ok) {
+        let detail = "";
+        try {
+            const body = await res.json();
+            detail = body.error_description || body.error || "";
+        } catch { }
+        const hint = /invalid_client/i.test(detail) ? " The DISCORD_CLIENT_SECRET on the server does not match the Discord application."
+            : /redirect_uri/i.test(detail) ? ` The redirect URI ${config.redirectUri} is not registered on the Discord application.`
+                : "";
+        throw new Error(`Discord token exchange failed (${res.status}${detail ? `: ${detail}` : ""}).${hint}`);
+    }
     return res.json();
 }
 

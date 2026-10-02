@@ -53,8 +53,8 @@ export const cloudRoutes = {
             user = await fetchUser(token.access_token);
         } catch (e) {
             console.error("OAuth failure:", e.message);
-            if (wantsJson) return json(res, 400, { error: "Discord rejected the authorization. Try again." });
-            return html(res, 400, page("Authorization failed", "<p>Discord rejected the authorization. Close this window and try again from the SnoreClient Cloud settings.</p>"));
+            if (wantsJson) return json(res, 400, { error: e.message });
+            return html(res, 400, page("Authorization failed", `<p>${escapeHtml(e.message)}</p><p>Close this window and try again from the SnoreClient Cloud settings.</p>`));
         } finally {
             if (token?.access_token) revokeToken(token.access_token);
         }

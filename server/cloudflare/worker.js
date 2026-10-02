@@ -124,7 +124,18 @@ async function exchangeCode(cfg, code) {
             redirect_uri: cfg.redirectUri,
         }),
     });
-    if (!res.ok) throw new Error(`Discord token exchange failed (${res.status})`);
+    if (!res.ok) {
+        let detail = "";
+        try {
+            const body = await res.json();
+            detail = body.error_description || body.error || "";
+        } catch { }
+        const hint = /invalid_client/i.test(detail) ? " The DISCORD_CLIENT_SECRET on the server does not match the Discord application."
+            : /redirect_uri/i.test(detail) ? ` The redirect URI ${cfg.redirectUri} is not registered on the Discord application.`
+                : /invalid_grant/i.test(detail) ? " The code was already used or expired, try again."
+                    : "";
+        throw new Error(`Discord token exchange failed (${res.status}${detail ? `: ${detail}` : ""}).${hint}`);
+    }
     const token = await res.json();
 
     const me = await fetch(`${DISCORD_API}/users/@me`, { headers: { Authorization: `Bearer ${token.access_token}` } });
@@ -207,8 +218,8 @@ route("GET", "/v1/oauth/callback", async ({ req, url, cfg, db, pages }) => {
         user = await exchangeCode(cfg, code);
     } catch (e) {
         console.error("OAuth failure:", e.message);
-        if (wantsJson) return json({ error: "Discord rejected the authorization. Try again." }, 400);
-        return html(pages.page("Authorization failed", "<p>Discord rejected the authorization. Close this window and try again from the SnoreClient Cloud settings.</p>"), 400);
+        if (wantsJson) return json({ error: e.message }, 400);
+        return html(pages.page("Authorization failed", `<p>${escapeHtml(e.message)}</p><p>Close this window and try again from the SnoreClient Cloud settings.</p>`), 400);
     }
 
     if (cfg.allowedUserIds.length && !cfg.allowedUserIds.includes(user.id)) {
