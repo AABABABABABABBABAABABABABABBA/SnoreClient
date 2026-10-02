@@ -367,9 +367,10 @@ route("DELETE", "/v2/data/:key", async ({ req, db, params }) => {
     return empty(meta.changes > 0 ? 204 : 404);
 });
 
-route("GET", "/", async ({ db, pages }) => {
+route("GET", "/", async ({ db, pages, cfg }) => {
     const row = await db.prepare("SELECT COUNT(*) AS n FROM users").first();
-    return html(pages.landing({ userCount: row?.n ?? 0 }));
+    const plugins = await loadPlugins(cfg).catch(() => []);
+    return html(pages.landing({ userCount: row?.n ?? 0, pluginCount: plugins.length }));
 });
 route("GET", "/accounts", async ({ cfg, db, pages }) => html(pages.accounts(cfg.publicAccounts ? await listAccounts(db) : [])));
 route("GET", "/privacy", ({ pages }) => html(pages.privacy()));

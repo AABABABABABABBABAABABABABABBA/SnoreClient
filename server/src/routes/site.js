@@ -69,7 +69,7 @@ async function latestRelease() {
 }
 
 export const siteRoutes = {
-    "GET /": (req, res) => html(res, 200, pages.landing({ userCount: users.count() })),
+    "GET /": async (req, res) => html(res, 200, pages.landing({ userCount: users.count(), pluginCount: (await loadPlugins()).length })),
     "GET /accounts": (req, res) => html(res, 200, pages.accounts(config.publicAccounts ? users.list() : [])),
     "GET /privacy": (req, res) => html(res, 200, pages.privacy()),
     "GET /download": (req, res) => html(res, 200, pages.download()),

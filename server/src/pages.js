@@ -8,52 +8,111 @@ export function escapeHtml(s) {
 }
 
 export function createPages(config) {
-const shell = (title, body, { wide = false } = {}) => `<!doctype html>
+const shell = (title, body, { wide = false, hero = false } = {}) => `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(title)}</title>
+<meta name="description" content="${escapeHtml(config.siteName)} is a Discord client mod with hundreds of plugins, a theme builder and its own cloud.">
 <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#120f23">
+<meta name="theme-color" content="#070a12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f0d1a;--card:#17142a;--border:#2a2444;--fg:#f3f0ff;--muted:#a8a1c7;--accent:#a78bfa;--accent-2:#7c6cf6;--ok:#4ade80;--warn:#fbbf24}
+:root{--bg:#070a12;--bg2:#0b1020;--card:rgba(255,255,255,.035);--card-border:rgba(255,255,255,.08);--fg:#f4f6fb;--muted:#9aa3b8;--accent:#8ab4ff;--accent-2:#5b8cff;--accent-3:#a78bfa;--ok:#4ade80;--warn:#fbbf24}
 *{box-sizing:border-box}
-html{color-scheme:dark}
-body{margin:0;min-height:100vh;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif;line-height:1.55;color:var(--fg);background:radial-gradient(1100px 520px at 15% -10%,#2b2250 0%,var(--bg) 55%) fixed}
-a{color:var(--fg);text-decoration:none;border-bottom:1px solid var(--border);transition:.15s}
-a:hover{color:var(--accent);border-color:var(--accent)}
-main{max-width:${wide ? "1100px" : "760px"};margin:0 auto;padding:48px 16px 64px}
-nav{display:flex;align-items:center;gap:14px;margin-bottom:40px}
-nav img{width:40px;height:40px;border-radius:11px;box-shadow:0 8px 24px rgb(124 108 246 / 35%)}
-nav .brand{font-weight:800;font-size:1.25rem;letter-spacing:-.02em;border:0}
-nav .links{margin-left:auto;display:flex;gap:18px;font-size:.95rem}
-nav .links a{border:0;color:var(--muted)}
-nav .links a:hover{color:var(--fg)}
-h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;letter-spacing:-.03em;margin:0 0 12px;background:linear-gradient(90deg,#fff 0%,var(--accent) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
-h2{font-size:.9rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin:0 0 10px}
+html{color-scheme:dark;scroll-behavior:smooth}
+body{margin:0;min-height:100vh;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55;color:var(--fg);background:var(--bg);overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:
+ radial-gradient(900px 520px at 18% -10%,rgba(91,140,255,.22),transparent 60%),
+ radial-gradient(700px 480px at 85% 10%,rgba(167,139,250,.14),transparent 60%),
+ radial-gradient(900px 700px at 50% 110%,rgba(91,140,255,.10),transparent 60%),
+ linear-gradient(180deg,#0a0f1e 0%,var(--bg) 40%,#05070d 100%)}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.35;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1px);background-size:26px 26px;mask-image:radial-gradient(ellipse at 50% 0%,#000 0%,transparent 70%)}
+a{color:var(--fg);text-decoration:none;transition:color .15s}
+a:hover{color:var(--accent)}
+main{max-width:${wide ? "1180px" : "860px"};margin:0 auto;padding:0 20px 80px}
+nav{position:sticky;top:14px;z-index:10;display:flex;align-items:center;gap:6px;margin:14px auto 0;max-width:900px;padding:8px 10px 8px 12px;border-radius:999px;background:rgba(10,14,26,.72);border:1px solid var(--card-border);backdrop-filter:blur(18px) saturate(140%);box-shadow:0 10px 40px rgba(0,0,0,.35)}
+nav img{width:30px;height:30px;border-radius:9px}
+nav .brand{font-weight:700;font-size:.98rem;margin-right:14px;letter-spacing:-.01em}
+nav .links{display:flex;gap:4px;flex:1}
+nav .links a{padding:7px 12px;border-radius:999px;font-size:.88rem;color:var(--muted);font-weight:500}
+nav .links a:hover{color:var(--fg);background:rgba(255,255,255,.06)}
+nav .cta{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--card-border);font-size:.88rem;font-weight:600}
+nav .cta:hover{background:rgba(255,255,255,.14);color:#fff}
+h1{font-size:clamp(2.4rem,6vw,4.2rem);line-height:1.04;letter-spacing:-.035em;margin:0 0 14px;font-weight:800}
+h1 em{font-style:italic;font-weight:300;letter-spacing:-.02em}
+.hl{background:linear-gradient(90deg,#9ec1ff,#6f9bff 60%,#b9a7ff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 40px rgba(111,155,255,.35)}
+h2{font-size:clamp(1.7rem,3.6vw,2.4rem);letter-spacing:-.03em;line-height:1.1;margin:0 0 10px;font-weight:800}
+h3{font-size:1.05rem;margin:0 0 6px;font-weight:700;letter-spacing:-.01em}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
 p{color:var(--muted);margin:0 0 12px}
-.lead{font-size:1.15rem}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 24px;margin:16px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:12px;border:1px solid var(--border);background:var(--card);font-weight:600;transition:.15s}
-.btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--fg)}
-.btn.primary{background:linear-gradient(135deg,var(--accent-2),var(--accent));border-color:transparent;color:#fff}
-.btn.primary:hover{filter:brightness(1.08);color:#fff}
-.row{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
-code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em}
-pre{background:#0b0914;border:1px solid var(--border);border-radius:12px;padding:14px 16px;overflow:auto;color:#e9e4ff}
-code{background:#0b0914;border:1px solid var(--border);border-radius:6px;padding:1px 6px}
-.badge{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;padding:4px 10px;border-radius:999px;background:#1f1a36;border:1px solid var(--border);color:var(--muted)}
+.lead{font-size:1.12rem;max-width:620px}
+.center{text-align:center}
+.center .lead{margin-left:auto;margin-right:auto}
+.hero{padding:96px 0 60px;text-align:center}
+.hero .lead{font-size:1.2rem}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0}
+.center .row{justify-content:center}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:13px 22px;border-radius:999px;border:1px solid var(--card-border);background:rgba(255,255,255,.06);font-weight:600;font-size:.98rem;transition:.18s;backdrop-filter:blur(10px)}
+.btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.18)}
+.btn.primary{background:#fff;color:#0b1020;border-color:#fff}
+.btn.primary:hover{background:#e9efff;color:#0b1020}
+.btn svg{width:18px;height:18px}
+.stats{color:var(--muted);font-size:1rem;margin-top:26px}
+.stats b{color:var(--fg)}
+.section{padding:70px 0 10px}
+.section-head{text-align:center;max-width:620px;margin:0 auto 34px}
+.icon-ring{width:76px;height:76px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 30%,rgba(138,180,255,.35),rgba(138,180,255,.06));border:1px solid rgba(138,180,255,.25);box-shadow:0 0 50px rgba(91,140,255,.25)}
+.icon-ring svg{width:32px;height:32px;color:#cfe0ff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.grid.three{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{position:relative;background:var(--card);border:1px solid var(--card-border);border-radius:20px;padding:24px;transition:.2s;overflow:hidden}
+.card:hover{border-color:rgba(138,180,255,.35);transform:translateY(-2px);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.card .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid var(--card-border);margin-bottom:16px}
+.card .ico svg{width:20px;height:20px;color:#dbe6ff}
+.card.tint-green{background:linear-gradient(160deg,rgba(29,185,84,.14),var(--card) 55%)}
+.card.tint-blue{background:linear-gradient(160deg,rgba(91,140,255,.16),var(--card) 55%)}
+.card.tint-purple{background:linear-gradient(160deg,rgba(167,139,250,.16),var(--card) 55%)}
+.card.tint-pink{background:linear-gradient(160deg,rgba(244,114,182,.14),var(--card) 55%)}
+.card.tint-amber{background:linear-gradient(160deg,rgba(251,191,36,.12),var(--card) 55%)}
+.card.tint-cyan{background:linear-gradient(160deg,rgba(34,211,238,.12),var(--card) 55%)}
+.card b{color:var(--fg)}
+.k-green{color:#4ade80}.k-blue{color:#8ab4ff}.k-purple{color:#c4b5fd}.k-pink{color:#f9a8d4}.k-amber{color:#fcd34d}.k-cyan{color:#67e8f9}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;padding:60px 0}
+.split.flip > :first-child{order:2}
+@media (max-width:820px){.split{grid-template-columns:1fr}.split.flip > :first-child{order:0}}
+.mock{background:#0d1222;border:1px solid var(--card-border);border-radius:18px;padding:16px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.mock .bar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.mock .bar img{width:34px;height:34px;border-radius:50%}
+.mock .bar b{font-size:.92rem}
+.mock .app{font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:5px;background:#5b8cff;color:#fff;margin-left:6px}
+.mock .bar span{color:var(--muted);font-size:.78rem}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{background:#121a30;border:1px solid var(--card-border);border-radius:12px;padding:12px}
+.tile small{display:block;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em}
+.tile strong{font-size:1.35rem;letter-spacing:-.02em;color:#cfe0ff}
+.bars{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.bar-row{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted)}
+.bar-row i{flex:1;height:8px;border-radius:999px;background:linear-gradient(90deg,#5b8cff,#a78bfa);display:block;opacity:.9}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--card-border);color:var(--muted)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
-input[type=search]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--fg);font:inherit;outline:none}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em}
+pre{background:#0a0e1a;border:1px solid var(--card-border);border-radius:14px;padding:14px 16px;overflow:auto;color:#e6ecff}
+code{background:rgba(255,255,255,.06);border:1px solid var(--card-border);border-radius:6px;padding:1px 6px}
+input[type=search]{width:100%;padding:14px 16px;border-radius:999px;border:1px solid var(--card-border);background:rgba(255,255,255,.05);color:var(--fg);font:inherit;outline:none}
 input[type=search]:focus{border-color:var(--accent)}
 .plugin{display:flex;flex-direction:column;gap:6px}
-.plugin b{font-size:1.02rem}
 .plugin small{color:var(--muted)}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
-footer{margin-top:48px;color:var(--muted);font-size:.85rem;text-align:center}
-@media (max-width:600px){nav .links{display:none}}
+.cta-band{margin-top:70px;text-align:center;padding:60px 24px;border-radius:28px;border:1px solid var(--card-border);background:radial-gradient(600px 300px at 50% 0%,rgba(91,140,255,.25),transparent 70%),var(--card)}
+footer{margin-top:60px;color:var(--muted);font-size:.85rem;text-align:center}
+footer a{color:var(--muted)}
+.reveal{opacity:0;transform:translateY(14px);animation:rise .7s ease forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+@media (max-width:600px){nav .links{display:none}nav{margin-top:10px}.hero{padding:64px 0 40px}}
 </style>
 </head>
 <body>
@@ -62,36 +121,143 @@ footer{margin-top:48px;color:var(--muted);font-size:.85rem;text-align:center}
 <img src="/assets/icon.svg" alt="">
 <a class="brand" href="/">${escapeHtml(config.siteName)}</a>
 <div class="links"><a href="/plugins">Plugins</a><a href="/accounts">Accounts</a><a href="/download">Download</a><a href="/privacy">Privacy</a><a href="https://github.com/${escapeHtml(config.githubRepo)}">GitHub</a></div>
+<a class="cta" href="/download"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Download</a>
 </nav>
 ${body}
-<footer>${escapeHtml(config.siteName)} is a fork of <a href="https://github.com/Equicord/Equicord">Equicord</a> and <a href="https://github.com/Vendicated/Vencord">Vencord</a>. Not affiliated with Discord.</footer>
+<footer>${escapeHtml(config.siteName)} is built on <a href="https://github.com/Equicord/Equicord">Equicord</a> and <a href="https://github.com/Vendicated/Vencord">Vencord</a>. Not affiliated with Discord. · <a href="/privacy">Privacy</a> · <a href="https://github.com/${escapeHtml(config.githubRepo)}">Source</a></footer>
 </main>
 </body>
 </html>`;
 
 const page = (title, body) => shell(`${title} · ${config.siteName}`, `<h1>${escapeHtml(title)}</h1>${body}`);
 
-const landing = ({ userCount }) => shell(config.siteName, `
-<span class="badge"><span class="dot"></span> cloud online · ${userCount} connected account${userCount === 1 ? "" : "s"}</span>
-<h1 style="margin-top:14px">Discord, but cozier.</h1>
-<p class="lead">${escapeHtml(config.siteName)} is a Discord client mod with hundreds of plugins, custom themes, and its own self hosted cloud so your settings follow you everywhere.</p>
+const liveWidget = () => `
+<div class="card" id="live-card" style="margin-top:18px">
+<h3 style="font-size:1.1rem"><span class="dot" id="live-dot" style="display:inline-block;vertical-align:middle;margin-right:8px"></span>Online now · <span id="live-count">…</span></h3>
+<div id="live-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"><span class="badge">connecting…</span></div>
+</div>
+<script>
+(() => {
+  const dot = document.getElementById("live-dot"), count = document.getElementById("live-count"), list = document.getElementById("live-list");
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const ago = t => { const s = Math.floor((Date.now() - t) / 1000); return s < 60 ? "just now" : s < 3600 ? Math.floor(s / 60) + " min" : Math.floor(s / 3600) + " h"; };
+  function render(p) {
+    count.textContent = p.count + (p.viewers ? " · " + p.viewers + " watching" : "");
+    list.innerHTML = p.online.length ? p.online.map(u => '<span class="badge"><span class="dot"></span>' + esc(u.username) + ' <span style="opacity:.6">' + ago(u.since) + '</span></span>').join("") : '<span class="badge">nobody online right now</span>';
+  }
+  let retry = 1000;
+  function connect() {
+    const ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/v1/live");
+    ws.onopen = () => { retry = 1000; dot.style.background = "var(--ok)"; };
+    ws.onmessage = e => { const m = JSON.parse(e.data); if (m.type === "hello" || m.type === "presence") render(m); };
+    ws.onclose = () => { dot.style.background = "var(--muted)"; setTimeout(connect, retry = Math.min(retry * 2, 30000)); };
+    setInterval(() => { if (ws.readyState === 1) ws.send("ping"); }, 25000);
+  }
+  connect();
+})();
+</script>`;
+
+const svg = {
+    cloud: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 .4-9A7 7 0 0 0 4.3 12.5 3.5 3.5 0 0 0 5.5 19Z"/></svg>',
+    plug: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6m6-6v6M5 8h14l-1 5a6 6 0 0 1-12 0Z"/><path d="M12 19v3"/></svg>',
+    brush: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14 4 6 6-8.5 8.5a3 3 0 0 1-4.2 0L5.5 16.7a3 3 0 0 1 0-4.2Z"/><path d="M4 21c2-1 2.5-2 3-4"/></svg>',
+    bolt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7Z"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>',
+    chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg>',
+    eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+    sparkle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2 5.5L19.5 10 14 12l-2 5.5L10 12l-5.5-2L10 8.5Z"/></svg>',
+    bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4Z"/><path d="M10 21h4"/></svg>',
+    moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>',
+    download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>',
+};
+
+const fmt = n => Number(n || 0).toLocaleString("en-US");
+
+const landing = ({ userCount, pluginCount = 0 }) => shell(config.siteName, `
+<section class="hero reveal">
+<h1><em>${escapeHtml(config.siteName)}</em> <img src="/assets/icon.svg" alt="" style="width:.9em;height:.9em;vertical-align:-.12em;border-radius:22%"> is Discord's<br><span class="hl">cozy all-in-one</span> client.</h1>
+<p class="lead">Hundreds of plugins, a theme builder, dev cards, 24/7 voice, ghost ping logs and your own cloud. Everything your Discord was missing, in one install.</p>
 <div class="row">
-<a class="btn primary" href="/download">Download</a>
-<a class="btn" href="/plugins">Browse plugins</a>
-<a class="btn" href="/accounts">Connected accounts</a>
-<a class="btn" href="https://github.com/${escapeHtml(config.githubRepo)}">Source code</a>
+<a class="btn primary" href="/download">${svg.download}Download for Windows</a>
+<a class="btn" href="/plugins">Browse plugins <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></a>
 </div>
-<div class="grid">
-<div class="card"><h2>Cloud sync</h2><p>Settings, QuickCSS and plugin data sync between every device you use, stored on this server and nowhere else.</p></div>
-<div class="card"><h2>Hundreds of plugins</h2><p>Everything from Equicord and Vencord, ready to toggle from the settings panel with no extra downloads.</p></div>
-<div class="card"><h2>Yours to run</h2><p>This instance runs on a single Node process with an SQLite file. Point your own build at it with one environment variable.</p></div>
+<p class="stats">Powering <b>${fmt(userCount)}</b> connected account${userCount === 1 ? "" : "s"} with <b>${fmt(pluginCount)}</b> plugins · <b id="hero-online">…</b> online right now</p>
+</section>
+
+<section class="section">
+<div class="section-head">
+<div class="icon-ring">${svg.plug}</div>
+<h2><span class="hl">Features</span> that go deep</h2>
+<p class="lead">Look at what you already use in Discord, then add the parts that were missing.</p>
 </div>
-<div class="card">
-<h2>Connect this server</h2>
-<p>In Discord open <b>Settings → ${escapeHtml(config.siteName)} → Cloud</b>, paste the URL below as the backend and turn on Cloud Integration.</p>
-<pre>${escapeHtml(config.publicUrl)}/</pre>
+<div class="grid three">
+<div class="card tint-blue"><div class="ico">${svg.cloud}</div><h3>Your own cloud</h3><p>Settings, QuickCSS and plugin data <b class="k-blue">sync between every device</b>, with live presence so you can see who is online.</p></div>
+<div class="card tint-purple"><div class="ico">${svg.brush}</div><h3>Theme Builder</h3><p>Pick colors, fonts, corner radius, glass blur and a wallpaper. <b class="k-purple">Preview live</b>, then save or share the theme.</p></div>
+<div class="card tint-green"><div class="ico">${svg.mic}</div><h3>24/7 voice</h3><p>Sit in a voice channel around the clock, <b class="k-green">muted and deafened</b>, and rejoin automatically after any disconnect.</p></div>
+<div class="card tint-pink"><div class="ico">${svg.bell}</div><h3>Ghost ping log</h3><p>Every deleted or edited ping gets logged to a <b class="k-pink">.txt file</b> with who, where and what they said.</p></div>
+<div class="card tint-amber"><div class="ico">${svg.eye}</div><h3>Private mode</h3><p>One hotkey blurs <b class="k-amber">names, avatars and messages</b> so you can stream or screenshot safely.</p></div>
+<div class="card tint-cyan"><div class="ico">${svg.sparkle}</div><h3>Dev cards</h3><p>Click any plugin author to see their <b class="k-cyan">badges, bio, connections</b> and every plugin they wrote.</p></div>
 </div>
-${liveWidget()}`);
+</section>
+
+<section class="split">
+<div>
+<div class="eyebrow">Dashboard</div>
+<h2>Advanced <span class="hl">statistics</span>, built right in</h2>
+<p class="lead">${escapeHtml(config.siteName)} tracks messages, pings, voice time and uptime locally, then shows it as clean tiles inside Discord's settings, right next to one click switches for every feature.</p>
+<div class="chips"><span class="badge">Messages sent</span><span class="badge">Time in voice</span><span class="badge">Busiest channels</span><span class="badge">Online on cloud</span></div>
+</div>
+<div class="mock">
+<div class="bar"><img src="/assets/icon.png" alt=""><b>${escapeHtml(config.siteName)}<span class="app">APP</span></b><span>Dashboard</span></div>
+<div class="tiles">
+<div class="tile"><small>Messages sent</small><strong>41.6K</strong></div>
+<div class="tile"><small>Time in voice</small><strong>128h</strong></div>
+<div class="tile"><small>Plugins on</small><strong>97 / 356</strong></div>
+</div>
+<div class="bars">
+<div class="bar-row">#general <i style="max-width:100%"></i> 21.4K</div>
+<div class="bar-row">#dev-talk <i style="max-width:62%"></i> 11.2K</div>
+<div class="bar-row">#memes <i style="max-width:38%"></i> 5.9K</div>
+</div>
+</div>
+</section>
+
+<section class="split flip">
+<div>
+<div class="eyebrow">Cloud</div>
+<h2>A cloud that <span class="hl">actually goes live</span></h2>
+<p class="lead">Connect once with Discord login. From then on your setup follows you to every machine, and the Online now list below updates the second someone opens Discord.</p>
+<div class="row"><a class="btn" href="/accounts">See who's connected</a></div>
+</div>
+<div>${liveWidget()}</div>
+</section>
+
+<section class="section">
+<div class="section-head">
+<div class="icon-ring">${svg.bolt}</div>
+<h2>Countless <span class="hl">more features</span></h2>
+<p class="lead">Never worry about needing another client mod. ${escapeHtml(config.siteName)} covers the tools you actually use.</p>
+</div>
+<div class="grid three">
+<div class="card"><div class="ico">${svg.shield}</div><h3>Moderation shortcuts</h3><p>Quick Warn fills in a user's id and sends your bot's warn command. Snipe shows the last deleted message with <code>/snipe</code>.</p></div>
+<div class="card"><div class="ico">${svg.chart}</div><h3>Auto everything</h3><p>Away replies while idle, GIF auto responses for chosen friends, animated status, reminders that jump back to a message.</p></div>
+<div class="card"><div class="ico">${svg.moon}</div><h3>Looks the part</h3><p>3D status orbs, a redesigned settings panel, window opacity, always on top, and streamer mode that hides your hardware.</p></div>
+</div>
+</section>
+
+<section class="cta-band reveal">
+<h2>Ready when you are.</h2>
+<p class="lead">One launcher. Picks your Discord, installs ${escapeHtml(config.siteName)}, keeps it updated, and starts Discord with it.</p>
+<div class="row" style="justify-content:center">
+<a class="btn primary" href="/release/SnoreClientLauncher.exe">${svg.download}SnoreClient Launcher</a>
+<a class="btn" href="/download">All downloads</a>
+</div>
+<p style="font-size:.85rem">Windows, Linux, macOS and an unsigned iOS IPA. Unsigned on Windows, so SmartScreen may ask once.</p>
+</section>
+<script>
+(async () => { try { const r = await fetch("/v1/live.json"); const d = await r.json(); const el = document.getElementById("hero-online"); if (el) el.textContent = d.count; } catch { } })();
+</script>`, { wide: true });
 
 const privacy = () => page("Privacy", `
 <div class="card">
@@ -159,32 +325,6 @@ ${p.tags?.length ? `<h2>Tags</h2><div class="tags">${p.tags.map(t => `<span clas
 <p>Open <b>Settings → ${escapeHtml(config.siteName)} → Plugins</b> and search for <code>${escapeHtml(p.name)}</code>.</p>
 </div>
 <p><a href="/plugins">← All plugins</a></p>`);
-
-const liveWidget = () => `
-<div class="card" id="live-card" style="margin-top:18px">
-<h2><span class="dot" id="live-dot" style="display:inline-block;vertical-align:middle;margin-right:6px"></span>Online now · <span id="live-count">…</span></h2>
-<div id="live-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"><span class="badge">connecting…</span></div>
-</div>
-<script>
-(() => {
-  const dot = document.getElementById("live-dot"), count = document.getElementById("live-count"), list = document.getElementById("live-list");
-  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  const ago = t => { const s = Math.floor((Date.now() - t) / 1000); return s < 60 ? "just now" : s < 3600 ? Math.floor(s / 60) + " min" : Math.floor(s / 3600) + " h"; };
-  function render(p) {
-    count.textContent = p.count + (p.viewers ? " · " + p.viewers + " watching" : "");
-    list.innerHTML = p.online.length ? p.online.map(u => '<span class="badge"><span class="dot"></span>' + esc(u.username) + ' <span style="opacity:.6">' + ago(u.since) + '</span></span>').join("") : '<span class="badge">nobody online right now</span>';
-  }
-  let retry = 1000;
-  function connect() {
-    const ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/v1/live");
-    ws.onopen = () => { retry = 1000; dot.style.background = "var(--ok)"; };
-    ws.onmessage = e => { const m = JSON.parse(e.data); if (m.type === "hello" || m.type === "presence") render(m); };
-    ws.onclose = () => { dot.style.background = "var(--muted)"; setTimeout(connect, retry = Math.min(retry * 2, 30000)); };
-    setInterval(() => { if (ws.readyState === 1) ws.send("ping"); }, 25000);
-  }
-  connect();
-})();
-</script>`;
 
 const accounts = list => page("Connected accounts", `
 <p class="lead">${list.length} account${list.length === 1 ? "" : "s"} connected to this ${escapeHtml(config.siteName)} cloud, most recently active first.</p>
