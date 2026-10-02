@@ -1,0 +1,29 @@
+body.vc-opt-reduce-motion *,
+body.vc-opt-reduce-motion *::before,
+body.vc-opt-reduce-motion *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+}
+
+body.vc-opt-low-spec * {
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+body.vc-opt-low-spec [class*="bannerImage_"],
+body.vc-opt-low-spec [class*="profileBanner_"] {
+    display: none !important;
+}
+
+body.vc-opt-no-gif img[src*=".gif"],
+body.vc-opt-no-gif video[autoplay] {
+    filter: grayscale(0.2);
+}
+
+body.vc-opt-idle [class*="guilds_"] video,
+body.vc-opt-idle [class*="chat_"] video,
+body.vc-opt-idle [class*="embedVideo"] video {
+    visibility: hidden;
+}

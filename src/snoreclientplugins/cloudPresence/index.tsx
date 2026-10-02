@@ -10,6 +10,7 @@ import { definePluginSettings, Settings, SettingsStore } from "@api/Settings";
 import { getCloudAuth } from "@api/SettingsSync/cloudSetup";
 import { onCloudKey, pullCloudKeys, putCloudKey } from "@api/SettingsSync/cloudSync";
 import { gitHashShort } from "@shared/vencordUserAgent";
+import { perf } from "@snoreclientplugins/optimizer";
 import { SnoreClientDevs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
@@ -243,6 +244,8 @@ function systemInfo() {
         locale: nav.language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         connection: nav.connection?.effectiveType ?? "", onLine: nav.onLine,
         startedAt: performance.timeOrigin,
+        perf: isPluginEnabled("Optimizer") ? { ...perf } : null,
+        optimizer: { reduceMotion: !!Settings.plugins.Optimizer?.reduceMotion, lowSpec: !!Settings.plugins.Optimizer?.lowSpec, idleThrottle: Settings.plugins.Optimizer?.idleThrottle !== false, noGifPlay: Settings.plugins.Optimizer?.noGifPlay !== false, trimMemory: Settings.plugins.Optimizer?.trimMemory !== false },
     };
 }
 
@@ -338,6 +341,7 @@ interface RemoteCommands {
     snippets?: string;
     publicProfile?: boolean;
     plugins?: Record<string, boolean>;
+    optimizer?: Record<string, boolean>;
     social?: { accept?: string[]; deny?: string[]; block?: string[]; acceptMessage?: string[]; denyMessage?: string[]; };
 }
 
@@ -371,6 +375,11 @@ async function applyRemote(value: unknown) {
     if (typeof cmd.snippets === "string") (Settings.plugins.TextSnippets ??= { enabled: false }).snippets = cmd.snippets.slice(0, 8000);
     if (typeof cmd.publicProfile === "boolean") settings.store.publicProfile = cmd.publicProfile;
     if (cmd.plugins) for (const [name, on] of Object.entries(cmd.plugins)) if (typeof on === "boolean") togglePlugin(name, on);
+    if (cmd.optimizer && typeof cmd.optimizer === "object") {
+        togglePlugin("Optimizer", true);
+        const o = Settings.plugins.Optimizer ??= { enabled: true };
+        for (const k of ["reduceMotion", "lowSpec", "idleThrottle", "noGifPlay", "trimMemory"]) if (typeof cmd.optimizer[k] === "boolean") o[k] = cmd.optimizer[k];
+    }
     if (cmd.social && typeof cmd.social === "object") await applySocial(cmd.social);
 
     await publishDevice();

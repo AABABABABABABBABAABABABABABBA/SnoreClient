@@ -539,6 +539,7 @@ route("POST", "/v1/me/remote", async ({ req, cfg, db }) => {
     const allowed = {};
     for (const k of ["ghostMode", "privateMode", "awayReply", "publicProfile"]) if (typeof body[k] === "boolean") allowed[k] = body[k];
     for (const k of ["awayMessage", "keywords", "webhook", "snippets"]) if (typeof body[k] === "string") allowed[k] = body[k].slice(0, k === "snippets" ? 8000 : 500);
+    if (body.optimizer && typeof body.optimizer === "object") allowed.optimizer = Object.fromEntries(Object.entries(body.optimizer).filter(([k, v]) => ["reduceMotion", "lowSpec", "idleThrottle", "noGifPlay", "trimMemory"].includes(k) && typeof v === "boolean"));
     if (body.social && typeof body.social === "object") {
         const ids = v => Array.isArray(v) ? v.filter(x => typeof x === "string" && /^\d{5,25}$/.test(x)).slice(0, 50) : [];
         allowed.social = Object.fromEntries(["accept", "deny", "block", "acceptMessage", "denyMessage"].map(k => [k, ids(body.social[k])]));

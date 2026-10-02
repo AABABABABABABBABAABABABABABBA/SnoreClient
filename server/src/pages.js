@@ -396,6 +396,7 @@ th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;
 <div class="item" data-panel="ghost">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M5 21V11a7 7 0 0 1 14 0v10l-2.3-2-2.4 2-2.3-2-2.3 2-2.4-2Z'/><circle cx='9.5' cy='11' r='1'/><circle cx='14.5' cy='11' r='1'/></svg>"}Ghost pings</div>
 <div class="item" data-panel="friends">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><circle cx='9' cy='8' r='3.5'/><path d='M2.5 20a6.5 6.5 0 0 1 13 0'/><path d='M17 8v6M14 11h6'/></svg>"}Friends</div>
 <div class="item" data-panel="servers">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><circle cx='12' cy='12' r='9'/><path d='M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18'/></svg>"}Servers</div>
+<div class="item" data-panel="optimize">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M13 2 4 14h7l-1 8 9-12h-7Z'/></svg>"}Optimization</div>
 <div class="item" data-panel="alerts">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M12 3v2M12 19v2M4 12H2M22 12h-2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4'/><circle cx='12' cy='12' r='4'/></svg>"}Alerts</div>
 <div class="item" data-panel="snippets">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M8 7h8M8 12h8M8 17h5'/><rect x='4' y='3' width='16' height='18' rx='2'/></svg>"}Snippets</div>
 <div class="item" data-panel="css">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16'/></svg>"}Quick CSS</div>
@@ -492,6 +493,19 @@ ${liveWidget()}
 <p id="sv-note">Reported by the app. Search, sort, and spot the ones you own.</p>
 <div class="row" style="margin:10px 0"><input type="search" id="sv-search" placeholder="Search servers…" style="max-width:420px"><span class="badge" id="sv-count"></span></div>
 <div id="sv-list" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px"><div class="card"><p>Loading…</p></div></div>
+</div>
+<div class="panel" id="panel-optimize">
+<div class="eyebrow">Optimization</div><h2>Make Discord <span class="hl">fast</span></h2>
+<p id="op-note">Performance switches for the Optimizer plugin, applied by the app within two minutes.</p>
+<div class="kpis" id="op-kpis"></div>
+<div class="card">
+<div class="vc-ctl"><div><b>Reduce motion</b><br><small>Cut animations and transitions everywhere.</small></div><label class="sw"><input type="checkbox" data-opt="reduceMotion"><span></span></label></div>
+<div class="vc-ctl"><div><b>Low spec mode</b><br><small>Drop blur, shadows and profile banners.</small></div><label class="sw"><input type="checkbox" data-opt="lowSpec"><span></span></label></div>
+<div class="vc-ctl"><div><b>Idle throttle</b><br><small>Pause videos and animations after a few minutes unfocused.</small></div><label class="sw"><input type="checkbox" data-opt="idleThrottle"><span></span></label></div>
+<div class="vc-ctl"><div><b>Pause GIFs when unfocused</b><br><small>No autoplay while Discord is in the background.</small></div><label class="sw"><input type="checkbox" data-opt="noGifPlay"><span></span></label></div>
+<div class="vc-ctl"><div><b>Trim memory while idle</b><br><small>Release cached images when you are away.</small></div><label class="sw"><input type="checkbox" data-opt="trimMemory"><span></span></label></div>
+</div>
+<div class="card" style="margin-top:14px"><h3>Presets</h3><div class="row"><a class="btn" href="#" data-preset="max">Max performance</a><a class="btn" href="#" data-preset="battery">Battery saver</a><a class="btn" href="#" data-preset="off" style="background:transparent">Everything off</a></div></div>
 </div>
 <div class="panel" id="panel-alerts">
 <div class="eyebrow">Alerts</div><h2>Notifier <span class="hl">keywords</span> &amp; webhook</h2>
@@ -592,6 +606,7 @@ ${liveWidget()}
     renderControls();
     renderServers();
     renderFriends();
+    renderOptimize();
     renderAlerts();
     renderSnippets();
     renderActivity();
@@ -615,6 +630,15 @@ ${liveWidget()}
     $("fr-out").innerHTML = (so.outgoing || []).length ? so.outgoing.map(u => row(u, "waiting for them", b("Cancel", "deny", u.id, true))).join("") : "<div class='card'><p>No outgoing requests.</p></div>";
     document.querySelectorAll("[data-social]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); const cur = (me.remote && me.remote.social) || {}; const next = Object.assign({}, cur); next[a.dataset.social] = (cur[a.dataset.social] || []).concat(a.dataset.id); sendRemote({ social: next }).then(renderFriends); }));
   }
+  function renderOptimize() {
+    const sy = (me.device && me.device.system) || {};
+    const cur = Object.assign({}, sy.optimizer || {}, (me.remote && me.remote.optimizer) || {});
+    document.querySelectorAll("[data-opt]").forEach(i => { i.checked = !!cur[i.dataset.opt]; });
+    const p = sy.perf;
+    $("op-kpis").innerHTML = p ? [[p.fps + " fps", "Frame rate"], [p.heapMb ? p.heapMb + " MB" : "?", "JS heap"], [Number(p.domNodes).toLocaleString(), "DOM nodes"], [p.idle ? "idle" : "active", "State"], [p.trims, "Memory trims"]].map(([v, l]) => "<div class='kpi'><strong>" + esc(v) + "</strong><small>" + l + "</small></div>").join("") : "<div class='kpi'><strong>–</strong><small>Enable the Optimizer plugin for live stats</small></div>";
+  }
+  document.querySelectorAll("[data-opt]").forEach(i => i.addEventListener("change", () => sendRemote({ optimizer: { [i.dataset.opt]: i.checked } })));
+  document.querySelectorAll("[data-preset]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); const p = a.dataset.preset; const v = p === "max" ? { reduceMotion: true, lowSpec: true, idleThrottle: true, noGifPlay: true, trimMemory: true } : p === "battery" ? { reduceMotion: true, lowSpec: false, idleThrottle: true, noGifPlay: true, trimMemory: true } : { reduceMotion: false, lowSpec: false, idleThrottle: false, noGifPlay: false, trimMemory: false }; sendRemote({ optimizer: v }).then(renderOptimize); }));
   function renderServers() {
     const list = (me.device && me.device.guilds) || [];
     const q = ($("sv-search").value || "").toLowerCase();
