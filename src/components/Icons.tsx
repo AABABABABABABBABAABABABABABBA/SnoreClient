@@ -1495,3 +1495,11 @@ export function UploadIcon(props: IconProps) {
         </Icon>
     );
 }
+
+export function DashboardIcon(props: IconProps) {
+    return (
+        <Icon {...props} viewBox="0 0 24 24">
+            <path fill={props.fill || "currentColor"} d="M4 3h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm10 0h6a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm0 7h6a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1ZM4 14h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1Z" />
+        </Icon>
+    );
+}

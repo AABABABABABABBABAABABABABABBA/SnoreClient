@@ -5,11 +5,12 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { BackupRestoreIcon, CloudIcon, LogIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PluginsIcon, UpdaterIcon } from "@components/Icons";
+import { BackupRestoreIcon, CloudIcon, DashboardIcon, LogIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PluginsIcon, UpdaterIcon } from "@components/Icons";
 import {
     BackupAndRestoreTab,
     ChangelogTab,
     CloudTab,
+    DashboardTab,
     PatchHelperTab,
     PluginsTab,
     ThemesTab,
@@ -196,6 +197,13 @@ export default definePlugin({
                 panelTitle: "SnoreClient Settings",
                 Component: VencordTab,
                 Icon: MainSettingsIcon
+            }),
+            buildEntry({
+                key: "snoreclient_dashboard",
+                title: "Dashboard",
+                panelTitle: "SnoreClient Dashboard",
+                Component: DashboardTab,
+                Icon: DashboardIcon
             }),
             buildEntry({
                 key: "snoreclient_plugins",

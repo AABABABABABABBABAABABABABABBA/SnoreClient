@@ -1,0 +1,81 @@
+.vc-dash-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.vc-dash-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background: var(--card-background-default);
+    transition: border-color 0.12s ease-out;
+}
+
+.vc-dash-tile:hover {
+    border-color: color-mix(in srgb, var(--snore-accent) 50%, var(--border-subtle));
+}
+
+.vc-dash-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--snore-accent);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.vc-dash-label {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.vc-dash-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.vc-dash-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-subtle);
+    background: var(--card-background-default);
+}
+
+.vc-dash-row-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.vc-dash-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--status-positive);
+    box-shadow: 0 0 8px var(--status-positive);
+    flex-shrink: 0;
+}
+
+.vc-dash-dot-off {
+    background: var(--text-muted);
+    box-shadow: none;
+}
+
+.vc-dash-dot-warn {
+    background: var(--status-warning, #f0b232);
+    box-shadow: 0 0 8px var(--status-warning, #f0b232);
+}
