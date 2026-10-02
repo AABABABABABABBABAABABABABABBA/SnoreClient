@@ -3,6 +3,10 @@
 [![Tests](https://github.com/aababababababbabaabababababba/SnoreClient/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/aababababababbabaabababababba/SnoreClient/actions/workflows/test.yml)
 [![Release](https://github.com/aababababababbabaabababababba/SnoreClient/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/aababababababbabaabababababba/SnoreClient/actions/workflows/build.yml)
 
+## About this project
+
+I was bored and had an idea to make a Discord client. I do not claim any of the work that Claude AI did for me. I did none of the work besides putting the stuff together and debugging issues.
+
 **Discord, but cozier.** SnoreClient is a Discord client mod forked from [Equicord](https://github.com/Equicord/Equicord) (itself a fork of [Vencord](https://github.com/Vendicated/Vencord)). It keeps the full plugin collection and adds:
 
 - **A self hosted cloud.** The `server/` folder is a complete settings sync backend you can run on any VPS. Your settings, QuickCSS and plugin data sync between devices through *your* server, not someone else's.
