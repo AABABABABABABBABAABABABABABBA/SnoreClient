@@ -1,0 +1,11 @@
+[class*="deviceLabel_"],
+[class*="deviceSubLabel_"] {
+    filter: blur(6px);
+    transition: filter 0.15s ease-out;
+    user-select: none;
+}
+
+body:not(.vc-smd-no-hover) [class*="deviceContainer_"]:hover [class*="deviceLabel_"],
+body:not(.vc-smd-no-hover) [class*="deviceContainer_"]:hover [class*="deviceSubLabel_"] {
+    filter: none;
+}
