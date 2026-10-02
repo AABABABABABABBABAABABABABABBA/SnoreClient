@@ -150,8 +150,10 @@ export const cloudRoutes = {
         const ghostPings = readJsonKey("ghostpings");
         const remote = readJsonKey("remote");
         const social = readJsonKey("social");
+        const lastfm = readJsonKey("lastfm");
         json(res, 200, {
             social,
+            lastfm,
             user: { id: user.id, username: user.username, global_name: profile?.global_name ?? null, avatar: profile?.avatar ?? null, created_at: user.created_at, last_seen_at: user.last_seen_at },
             entries,
             legacy: v1 ? { written: v1.written, size: v1.data.length } : null,
@@ -164,6 +166,15 @@ export const cloudRoutes = {
             online: false,
             onlineUsers: [],
         }, { "Cache-Control": "no-store" });
+    },
+
+    "GET /v1/profile/:id/lastfm": (req, res, url, params) => {
+        if (!/^\d{15,22}$/.test(params.id)) throw new HttpError(404, "Not found");
+        const row = dataV2.get(params.id, "lastfm");
+        let state = null;
+        if (row) { try { state = JSON.parse(Buffer.from(row.value).toString("utf8")); } catch { } }
+        if (!state || state.hidden || !state.username) throw new HttpError(404, "Not linked");
+        json(res, 200, state, { "Cache-Control": "public, max-age=15", "Access-Control-Allow-Origin": "*" });
     },
 
     "GET /v1/me/backups": (req, res) => {

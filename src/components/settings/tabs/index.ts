@@ -8,6 +8,7 @@ import "./styles.css";
 
 export * from "./BaseTab";
 export { default as ChangelogTab } from "./changelog";
+export { default as ConnectionsTab } from "./connections";
 export { default as DashboardTab } from "./dashboard";
 export { default as PatchHelperTab } from "./patchHelper";
 export { default as PluginsTab } from "./plugins";

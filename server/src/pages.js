@@ -738,6 +738,7 @@ ${liveWidget()}
     const a = (d && d.account) || null;
     const nitro = { 0: "None", 1: "Classic", 2: "Nitro", 3: "Basic" };
     $("dev-account").innerHTML = a ? [[esc(a.status), "Status"], [nitro[a.premiumType] || a.premiumType, "Nitro"], [a.mfaEnabled ? "On" : "Off", "2FA"], [a.verified ? "Yes" : "No", "Email verified"], [new Date(a.createdAt).toLocaleDateString(), "Account created"], [a.voice ? esc(a.voice.channel) + " <small>" + esc(a.voice.guild) + (a.voice.muted ? " · muted" : "") + (a.voice.deafened ? " · deafened" : "") + (a.voice.streaming ? " · streaming" : "") + "</small>" : "Not in voice", "Voice"], [a.activities && a.activities.length ? esc(a.activities.join(", ")) : "None", "Activities"]].map(([v, l]) => "<div class='kpi'><strong style='font-size:1.1rem'>" + v + "</strong><small>" + l + "</small></div>").join("") : "<div class='kpi'><strong>–</strong><small>Not reported yet</small></div>";
+    if (me.lastfm && me.lastfm.username) $("dev-account").insertAdjacentHTML("beforeend", "<div class='kpi'><strong style='font-size:1.1rem'>" + (me.lastfm.nowPlaying ? esc(me.lastfm.nowPlaying.name) + " <small>" + esc(me.lastfm.nowPlaying.artist) + "</small>" : "Not playing") + "</strong><small>Last.fm · " + esc(me.lastfm.username) + "</small></div>");
     const sy = (d && d.system) || null;
     $("dev-system").innerHTML = sy ? [[esc(sy.discordBuild) + " " + esc(sy.buildNumber), "Discord build"], [sy.appVersion ? esc(sy.appVersion) : "web", "Discord app"], [sy.cores || "?", "CPU cores"], [sy.memoryGb ? "≥ " + sy.memoryGb + " GB" : "?", "Memory"], [esc(sy.screen), "Screen"], [esc(sy.locale), "Locale"], [esc(sy.timezone), "Timezone"], [sy.connection ? esc(sy.connection) : (sy.onLine ? "online" : "offline"), "Connection"], [sy.startedAt ? hms(Math.floor((d.updatedAt - sy.startedAt) / 1000)) : "?", "Discord open for"]].map(([v, l]) => "<div class='kpi'><strong style='font-size:1.1rem'>" + v + "</strong><small>" + l + "</small></div>").join("") : "<div class='kpi'><strong>–</strong><small>Not reported yet</small></div>";
     const others = (me.onlineUsers || []).filter(u => u.id !== me.user.id);
@@ -791,7 +792,7 @@ const status = ({ runtime, users, dbMs = 0, live = false, liveMs = 0, online = 0
 </div>
 <p style="margin-top:18px;color:var(--muted);font-size:.85rem">Machine readable: <code>/health</code> and <code>/v1/live.json</code>.</p>`);
 
-const profile = ({ user, profile, device, online }) => {
+const profile = ({ user, profile, device, online, lastfm = null }) => {
     const name = profile?.global_name || user.username;
     const avatar = profile?.avatar ? `https://cdn.discordapp.com/avatars/${escapeHtml(user.id)}/${escapeHtml(profile.avatar)}.png?size=256` : "/assets/icon.png";
     const plugins = device?.plugins ? device.plugins.filter(p => p.enabled).length : null;
@@ -804,6 +805,11 @@ const profile = ({ user, profile, device, online }) => {
 ${device ? `<span class="badge">${escapeHtml(device.platform || "")} · v${escapeHtml(device.version || "")}</span>` : ""}
 ${plugins !== null ? `<span class="badge">${plugins} plugins on</span>` : ""}
 ${device?.guilds ? `<span class="badge">${device.guilds.length} servers</span>` : ""}</div></div></div>
+${lastfm?.username ? `<div class="card" id="lastfm" style="margin-top:14px;display:flex;gap:14px;align-items:center" data-user="${escapeHtml(user.id)}">
+${lastfm.nowPlaying?.image ? `<img id="lf-art" src="${escapeHtml(lastfm.nowPlaying.image)}" alt="" style="width:56px;height:56px;border-radius:10px;object-fit:cover">` : `<div id="lf-art" style="width:56px;height:56px;border-radius:10px;background:rgba(255,255,255,.06)"></div>`}
+<div style="min-width:0;flex:1"><div class="eyebrow" style="margin:0">Listening on Last.fm</div><b id="lf-name" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(lastfm.nowPlaying?.name ?? "Not playing right now")}</b><small id="lf-artist" style="color:var(--muted)">${escapeHtml(lastfm.nowPlaying ? `${lastfm.nowPlaying.artist}${lastfm.nowPlaying.album ? " · " + lastfm.nowPlaying.album : ""}` : "last.fm/" + lastfm.username)}</small></div>
+<a class="btn" href="https://www.last.fm/user/${escapeHtml(encodeURIComponent(lastfm.username))}" style="padding:6px 12px">Last.fm</a></div>
+<script>setInterval(async () => { try { const r = await fetch("/v1/profile/" + document.getElementById("lastfm").dataset.user + "/lastfm"); if (!r.ok) return; const s = await r.json(); const t = s.nowPlaying; document.getElementById("lf-name").textContent = t ? t.name : "Not playing right now"; document.getElementById("lf-artist").textContent = t ? t.artist + (t.album ? " · " + t.album : "") : "last.fm/" + s.username; const a = document.getElementById("lf-art"); if (t && t.image && a.tagName === "IMG") a.src = t.image; } catch {} }, 30000);</script>` : ""}
 <p style="margin-top:18px;color:var(--muted);font-size:.85rem">This page is shown because its owner turned on <b>Public profile</b> in their dashboard. <a href="/download">Get SnoreClient</a>.</p>`);
 };
 

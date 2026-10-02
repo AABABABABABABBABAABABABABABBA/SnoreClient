@@ -86,7 +86,10 @@ export const siteRoutes = {
         let rem = null;
         if (remote) { try { rem = JSON.parse(Buffer.from(remote.value).toString("utf8")); } catch { } }
         if (!user || !rem?.publicProfile) throw new HttpError(404, "This profile is private or does not exist");
-        html(res, 200, pages.profile({ user, profile: profiles.get(user.id), device: dev, online: false }));
+        const lf = dataV2.get(user.id, "lastfm");
+        let lastfm = null;
+        if (lf) { try { lastfm = JSON.parse(Buffer.from(lf.value).toString("utf8")); } catch { } }
+        html(res, 200, pages.profile({ user, profile: profiles.get(user.id), device: dev, online: false, lastfm: lastfm && !lastfm.hidden ? lastfm : null }));
     },
     "GET /health": (req, res) => json(res, 200, { ok: true, uptime: Math.round(process.uptime()) }),
 

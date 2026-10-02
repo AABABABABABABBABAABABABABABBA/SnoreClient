@@ -462,6 +462,7 @@ route("GET", "/v1/me", async ({ req, cfg, db, env }) => {
     const ghostPings = await readJsonKey("ghostpings");
     const remote = await readJsonKey("remote");
     const social = await readJsonKey("social");
+    const lastfm = await readJsonKey("lastfm");
     let online = false;
     let onlineUsers = [];
     try {
@@ -480,6 +481,7 @@ route("GET", "/v1/me", async ({ req, cfg, db, env }) => {
         ghostPings,
         remote,
         social,
+        lastfm,
         online,
         onlineUsers,
     }, 200, { "Cache-Control": "no-store" });
@@ -493,6 +495,15 @@ async function writeKey(db, userId, key, bytes) {
         ON CONFLICT(user_id, key) DO UPDATE SET version = excluded.version, checksum = excluded.checksum, value = excluded.value, updated_at = excluded.updated_at
     `).bind(userId, key, (prev?.version ?? 0) + 1, checksum, b64.encode(bytes), Date.now()).run();
 }
+
+route("GET", "/v1/profile/:id/lastfm", async ({ db, params }) => {
+    if (!/^\d{15,22}$/.test(params.id)) throw new HttpError(404, "Not found");
+    const row = await db.prepare("SELECT value FROM data_v2 WHERE user_id = ? AND key = 'lastfm'").bind(params.id).first();
+    let state = null;
+    if (row) { try { state = JSON.parse(new TextDecoder().decode(b64.decode(row.value))); } catch { } }
+    if (!state || state.hidden || !state.username) throw new HttpError(404, "Not linked");
+    return json(state, 200, { "Cache-Control": "public, max-age=15", "Access-Control-Allow-Origin": "*" });
+});
 
 route("GET", "/v1/me/backups", async ({ req, cfg, db }) => {
     const user = await requireSession(req, cfg, db);
@@ -607,7 +618,8 @@ route("GET", "/u/:id", async ({ env, db, pages, params }) => {
     const profile = await db.prepare("SELECT avatar, global_name FROM profiles WHERE user_id = ?").bind(user.id).first();
     let online = false;
     try { const snap = await (await hub(env).fetch("https://live/snapshot")).json(); online = snap.online.some(u => u.id === user.id); } catch { }
-    return html(pages.profile({ user, profile, device: await read("device"), online }));
+    const lastfm = await read("lastfm");
+    return html(pages.profile({ user, profile, device: await read("device"), online, lastfm: lastfm && !lastfm.hidden ? lastfm : null }));
 });
 route("GET", "/download", ({ pages }) => html(pages.download()));
 route("GET", "/health", () => json({ ok: true, runtime: "cloudflare" }));

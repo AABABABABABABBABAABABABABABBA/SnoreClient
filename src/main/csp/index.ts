@@ -56,6 +56,7 @@ export const CspPolicies: PolicyMap = {
     "api.github.com": ConnectSrc, // used for updating Vencord itself
     [new URL(SNORE_SERVER_URL).host]: ImageAndCssSrc, // SnoreClient server (cloud sync, assets)
     "ws.audioscrobbler.com": ConnectSrc, // Last.fm API
+    "lastfm.freetls.fastly.net": ImageSrc, // Last.fm album art
     "musicbrainz.org": ConnectSrc,
     "*.listenbrainz.org": ConnectSrc,
     "coverartarchive.org": ConnectSrc,

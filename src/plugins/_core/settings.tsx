@@ -5,11 +5,12 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { BackupRestoreIcon, CloudIcon, DashboardIcon, LogIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PluginsIcon, UpdaterIcon } from "@components/Icons";
+import { BackupRestoreIcon, CloudIcon, DashboardIcon, LinkIcon, LogIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PluginsIcon, UpdaterIcon } from "@components/Icons";
 import {
     BackupAndRestoreTab,
     ChangelogTab,
     CloudTab,
+    ConnectionsTab,
     DashboardTab,
     PatchHelperTab,
     PluginsTab,
@@ -236,6 +237,13 @@ export default definePlugin({
                 panelTitle: "SnoreClient Cloud",
                 Component: CloudTab,
                 Icon: CloudIcon
+            }),
+            buildEntry({
+                key: "snoreclient_connections",
+                title: "Connections",
+                panelTitle: "SnoreClient Connections",
+                Component: ConnectionsTab,
+                Icon: LinkIcon
             }),
             buildEntry({
                 key: "snoreclient_backup_restore",
