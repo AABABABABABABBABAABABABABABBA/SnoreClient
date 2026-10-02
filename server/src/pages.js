@@ -52,7 +52,8 @@ p{color:var(--muted);margin:0 0 12px}
 .center{text-align:center}
 .center .lead{margin-left:auto;margin-right:auto}
 .hero{padding:96px 0 60px;text-align:center}
-.hero .lead{font-size:1.2rem}
+.hero .lead{font-size:1.2rem;margin-left:auto;margin-right:auto}
+.hero .row,.cta-band .row{justify-content:center}
 .row{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0}
 .center .row{justify-content:center}
 .btn{display:inline-flex;align-items:center;gap:9px;padding:13px 22px;border-radius:999px;border:1px solid var(--card-border);background:rgba(255,255,255,.06);font-weight:600;font-size:.98rem;transition:.18s;backdrop-filter:blur(10px)}
