@@ -56,7 +56,7 @@ function readConfig(env) {
         siteName: env.SITE_NAME || "SnoreClient",
         maxBlobBytes: Number(env.MAX_BLOB_BYTES || 8 * 1024 * 1024),
         maxKeysPerUser: Number(env.MAX_KEYS_PER_USER || 64),
-        publicAccounts: env.PUBLIC_ACCOUNTS === "1",
+        publicAccounts: env.PUBLIC_ACCOUNTS !== "0",
     };
 }
 

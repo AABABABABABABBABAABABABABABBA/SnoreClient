@@ -24,7 +24,7 @@ ALLOWED_USER_IDS = ""
 MAX_BLOB_BYTES = "8388608"
 MAX_KEYS_PER_USER = "64"
 # "1" publishes the connected accounts list at /v1/accounts and /accounts (user ids and usernames are public then)
-PUBLIC_ACCOUNTS = "0"
+PUBLIC_ACCOUNTS = "1"
 
 # Secrets (never put these in this file):
 #   npx wrangler secret put DISCORD_CLIENT_SECRET

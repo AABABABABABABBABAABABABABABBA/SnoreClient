@@ -48,5 +48,5 @@ export const config = {
     siteName: process.env.SITE_NAME || "SnoreClient",
     trustProxy: process.env.TRUST_PROXY === "1",
     rateLimitPerMinute: Number(process.env.RATE_LIMIT_PER_MINUTE || 120),
-    publicAccounts: process.env.PUBLIC_ACCOUNTS === "1",
+    publicAccounts: process.env.PUBLIC_ACCOUNTS !== "0",
 };
