@@ -1,0 +1,75 @@
+.vc-tb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+    margin: 12px 0 16px;
+}
+
+.vc-tb-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background: var(--card-background-default);
+}
+
+.vc-tb-field label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.vc-tb-field input[type="color"] {
+    width: 100%;
+    height: 36px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    background: transparent;
+    padding: 2px;
+    cursor: pointer;
+}
+
+.vc-tb-field input[type="range"] {
+    width: 100%;
+    accent-color: var(--snore-accent);
+}
+
+.vc-tb-field input[type="text"],
+.vc-tb-field select {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+    background: var(--background-base-lower);
+    color: var(--text-default);
+    font: inherit;
+}
+
+.vc-tb-value {
+    color: var(--text-default);
+    font-size: 0.85rem;
+}
+
+.vc-tb-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0 16px;
+}
+
+.vc-tb-css {
+    width: 100%;
+    min-height: 160px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border-subtle);
+    background: var(--background-base-lowest);
+    color: var(--text-default);
+    font-family: var(--font-code);
+    font-size: 0.8rem;
+    resize: vertical;
+}

@@ -1,0 +1,31 @@
+body.vc-private-mode [class*="username_"],
+body.vc-private-mode [class*="nameTag_"],
+body.vc-private-mode [class*="avatar_"] img,
+body.vc-private-mode [class*="avatarWrapper_"] img,
+body.vc-private-mode [class*="guilds_"] [class*="listItem_"],
+body.vc-private-mode [class*="privateChannels_"] [class*="channel_"],
+body.vc-private-mode [class*="headerText_"],
+body.vc-private-mode [class*="guildName_"],
+body.vc-private-mode [class*="membersWrap_"] [class*="member_"],
+body.vc-private-mode [class*="title_"] [class*="name_"],
+body.vc-private-mode [class*="emailField"],
+body.vc-private-mode [class*="phoneField"] {
+    filter: blur(6px);
+    transition: filter 0.15s ease-out;
+}
+
+body.vc-private-mode.vc-private-mode-messages [class*="messageContent_"],
+body.vc-private-mode.vc-private-mode-messages [class*="embedWrapper_"],
+body.vc-private-mode.vc-private-mode-messages [class*="imageWrapper_"] {
+    filter: blur(7px);
+    transition: filter 0.15s ease-out;
+}
+
+body.vc-private-mode:not(.vc-private-mode-no-hover) [class*="message_"]:hover [class*="messageContent_"],
+body.vc-private-mode:not(.vc-private-mode-no-hover) [class*="message_"]:hover [class*="username_"],
+body.vc-private-mode:not(.vc-private-mode-no-hover) [class*="message_"]:hover [class*="avatar_"] img,
+body.vc-private-mode:not(.vc-private-mode-no-hover) [class*="member_"]:hover,
+body.vc-private-mode:not(.vc-private-mode-no-hover) [class*="channel_"]:hover,
+body.vc-private-mode:not(.vc-private-mode-no-hover) [class*="listItem_"]:hover {
+    filter: none;
+}
