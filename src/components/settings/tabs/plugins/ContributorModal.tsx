@@ -12,6 +12,7 @@ import { Button } from "@components/Button";
 import { GithubIcon, WebsiteIcon } from "@components/Icons";
 import { SnoreLogo } from "@components/SnoreLogo";
 import BadgeAPI from "@plugins/_api/badges";
+import { TEAM_GITHUB } from "@snoreclientplugins/snoreTeam";
 import { SnoreClientDevsById, VencordDevsById } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { fetchUserProfile, openUserProfile } from "@utils/discord";
@@ -70,6 +71,11 @@ const CONNECTION_URLS: Record<string, (name: string) => string> = {
 };
 
 export function openContributorModal(user: User) {
+    const github = TEAM_GITHUB(user.id);
+    if (github) {
+        VencordNative.native.openExternal(github);
+        return;
+    }
     openModal(modalProps => <ContributorModal user={user} modalProps={modalProps} />);
 }
 

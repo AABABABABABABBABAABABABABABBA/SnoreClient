@@ -40,7 +40,10 @@ interface TeamMember {
     role: string;
     contributions: string[];
     allDiscordBadges?: boolean;
+    github?: string;
 }
+
+export const TEAM_GITHUB = (userId: string) => TEAM[userId]?.github;
 
 const TEAM: Record<string, TeamMember> = {
     "454986373623971840": {
@@ -50,6 +53,7 @@ const TEAM: Record<string, TeamMember> = {
             "Helped wt instagram font method",
         ],
         allDiscordBadges: true,
+        github: "https://github.com/AABABABABABABBABAABABABABABBA?tab=repositories",
     },
 };
 
