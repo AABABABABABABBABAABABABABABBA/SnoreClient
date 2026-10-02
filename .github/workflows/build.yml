@@ -3,10 +3,12 @@ on:
     push:
         branches:
             - main
+            - dev
     workflow_dispatch:
 
 env:
     FORCE_COLOR: true
+    RELEASE_TAG: ${{ github.ref_name == 'dev' && 'dev' || 'latest' }}
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 permissions:
@@ -70,14 +72,24 @@ jobs:
                   cp misc/install.sh dist/release/install.sh
                   cp misc/install.ps1 dist/release/install.ps1
 
-            - name: Create the "latest" release if it does not exist
+            - name: Create the release if it does not exist
               run: |
-                  gh release view latest >/dev/null 2>&1 || gh release create latest \
-                    --title "SnoreClient latest" \
-                    --notes "Rolling release. Every push to main replaces these files. Install with the scripts in the README." \
-                    --latest
+                  if [ "$RELEASE_TAG" = "dev" ]; then
+                    gh release view dev >/dev/null 2>&1 || gh release create dev --prerelease \
+                      --title "SnoreClient dev" \
+                      --notes "Development channel. Every push to the dev branch replaces these files. Switch to it under Settings > SnoreClient > Updater."
+                  else
+                    gh release view latest >/dev/null 2>&1 || gh release create latest \
+                      --title "SnoreClient latest" \
+                      --notes "Rolling release. Every push to main replaces these files. Install with the scripts in the README." \
+                      --latest
+                  fi
 
-            - name: Upload SnoreClient Stable
+            - name: Upload the build
               run: |
-                  gh release edit latest --title "SnoreClient ${GITHUB_SHA}" --latest
-                  gh release upload latest --clobber dist/release/*
+                  if [ "$RELEASE_TAG" = "dev" ]; then
+                    gh release edit dev --title "SnoreClient ${GITHUB_SHA}" --prerelease
+                  else
+                    gh release edit latest --title "SnoreClient ${GITHUB_SHA}" --latest
+                  fi
+                  gh release upload "$RELEASE_TAG" --clobber dist/release/*

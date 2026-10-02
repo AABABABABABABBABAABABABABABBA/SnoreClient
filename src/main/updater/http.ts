@@ -41,8 +41,8 @@ async function githubGet<T = any>(endpoint: string) {
     });
 }
 
-async function calculateGitChanges() {
-    const isOutdated = await fetchUpdates();
+async function calculateGitChanges(_: unknown, channel: string = "stable") {
+    const isOutdated = await fetchUpdates(_, channel);
     if (!isOutdated) return [];
 
     const data = await githubGet(`/compare/${gitHash}...HEAD`);
@@ -54,8 +54,8 @@ async function calculateGitChanges() {
     }));
 }
 
-async function fetchUpdates() {
-    const data = await githubGet("/releases/latest");
+async function fetchUpdates(_?: unknown, channel: string = "stable") {
+    const data = await githubGet(`/releases/tags/${channel === "dev" ? "dev" : "latest"}`);
 
     const hash = data.name.slice(data.name.lastIndexOf(" ") + 1);
     if (hash === gitHash)

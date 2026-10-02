@@ -69,7 +69,7 @@ function EquibopSection() {
 }
 
 function Updater() {
-    const settings = useSettings(["autoUpdate", "autoUpdateNotification", "autoRestart"]);
+    const settings = useSettings(["autoUpdate", "autoUpdateNotification", "autoRestart", "updateChannel"]);
 
     const [repo, err, repoPending] = useAwaiter(getRepo, { fallbackValue: "Loading..." });
 
@@ -107,6 +107,15 @@ function Updater() {
                     disabled={!settings.autoUpdate}
                     hideBorder
                 />
+                {IS_STANDALONE && (
+                    <FormSwitch
+                        title="Use the dev channel"
+                        description="Get builds from the dev branch as soon as they are pushed, before they reach stable. Expect breakage."
+                        value={settings.updateChannel === "dev"}
+                        onChange={(v: boolean) => settings.updateChannel = v ? "dev" : "stable"}
+                        hideBorder
+                    />
+                )}
                 <FormSwitch
                     title="Restart automatically when you are away"
                     description="After an update downloads, Discord restarts on its own the next time you are not in a call, not typing, and the window is in the background. Until then nothing changes."
