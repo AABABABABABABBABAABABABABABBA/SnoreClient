@@ -8,7 +8,7 @@ import { dirname, extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { config } from "../config.js";
-import { users } from "../db.js";
+import { dataV2, profiles, users } from "../db.js";
 import { html, HttpError, json, redirect } from "../http.js";
 import { createPages } from "../pages.js";
 
@@ -75,6 +75,19 @@ export const siteRoutes = {
     "GET /download": (req, res) => html(res, 200, pages.download()),
     "GET /discord": (req, res) => redirect(res, process.env.DISCORD_INVITE || `https://github.com/${config.githubRepo}/discussions`),
     "GET /v1/live.json": (req, res) => json(res, 200, { online: [], count: 0, viewers: 0, at: Date.now(), note: "Live presence is only available on the Cloudflare deployment" }, { "Cache-Control": "no-store" }),
+    "GET /status": (req, res) => html(res, 200, pages.status({ runtime: "node", uptime: Math.round(process.uptime()), users: users.count(), live: false })),
+    "GET /u/:id": (req, res, url, params) => {
+        if (!/^\d{15,22}$/.test(params.id)) throw new HttpError(404, "Not found");
+        const user = users.get(params.id);
+        const device = user && dataV2.get(user.id, "device");
+        let dev = null;
+        if (device) { try { dev = JSON.parse(Buffer.from(device.value).toString("utf8")); } catch { } }
+        const remote = user && dataV2.get(user.id, "remote");
+        let rem = null;
+        if (remote) { try { rem = JSON.parse(Buffer.from(remote.value).toString("utf8")); } catch { } }
+        if (!user || !rem?.publicProfile) throw new HttpError(404, "This profile is private or does not exist");
+        html(res, 200, pages.profile({ user, profile: profiles.get(user.id), device: dev, online: false }));
+    },
     "GET /health": (req, res) => json(res, 200, { ok: true, uptime: Math.round(process.uptime()) }),
 
     "GET /plugins": async (req, res) => html(res, 200, pages.plugins(await loadPlugins())),

@@ -121,7 +121,7 @@ footer a{color:var(--muted)}
 <nav>
 <img src="/assets/icon.svg" alt="">
 <a class="brand" href="/">${escapeHtml(config.siteName)}</a>
-<div class="links"><a href="/plugins">Plugins</a><a href="/dashboard">Dashboard</a><a href="/accounts">Accounts</a><a href="/download">Download</a><a href="/privacy">Privacy</a><a href="https://github.com/${escapeHtml(config.githubRepo)}">GitHub</a></div>
+<div class="links"><a href="/plugins">Plugins</a><a href="/dashboard">Dashboard</a><a href="/accounts">Accounts</a><a href="/download">Download</a><a href="/privacy">Privacy</a><a href="/status">Status</a><a href="https://github.com/${escapeHtml(config.githubRepo)}">GitHub</a></div>
 <a class="cta" href="/dashboard" style="margin-right:6px;background:transparent">Log in</a>
 <a class="cta" href="/download"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Download</a>
 </nav>
@@ -394,6 +394,14 @@ th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;
 <div class="item" data-panel="devices">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><rect x='3' y='4' width='18' height='12' rx='2'/><path d='M8 20h8M12 16v4'/></svg>"}Devices</div>
 <div class="item" data-panel="notifications">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M6 16V11a6 6 0 0 1 12 0v5l2 2H4Z'/><path d='M10 21h4'/></svg>"}Notifications</div>
 <div class="item" data-panel="ghost">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M5 21V11a7 7 0 0 1 14 0v10l-2.3-2-2.4 2-2.3-2-2.3 2-2.4-2Z'/><circle cx='9.5' cy='11' r='1'/><circle cx='14.5' cy='11' r='1'/></svg>"}Ghost pings</div>
+<div class="item" data-panel="servers">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><circle cx='12' cy='12' r='9'/><path d='M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18'/></svg>"}Servers</div>
+<div class="item" data-panel="alerts">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M12 3v2M12 19v2M4 12H2M22 12h-2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4'/><circle cx='12' cy='12' r='4'/></svg>"}Alerts</div>
+<div class="item" data-panel="snippets">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M8 7h8M8 12h8M8 17h5'/><rect x='4' y='3' width='16' height='18' rx='2'/></svg>"}Snippets</div>
+<div class="item" data-panel="css">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16'/></svg>"}Quick CSS</div>
+<div class="item" data-panel="backups">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M12 8v4l3 2'/><path d='M3 12a9 9 0 1 0 3-6.7'/><path d='M3 4v5h5'/></svg>"}Backups</div>
+<div class="item" data-panel="activity">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><rect x='3' y='3' width='4' height='4'/><rect x='10' y='3' width='4' height='4'/><rect x='17' y='3' width='4' height='4'/><rect x='3' y='10' width='4' height='4'/><rect x='10' y='10' width='4' height='4'/><rect x='17' y='10' width='4' height='4'/><rect x='3' y='17' width='4' height='4'/><rect x='10' y='17' width='4' height='4'/></svg>"}Activity</div>
+<div class="item" data-panel="news">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M4 5h16v14H4Z'/><path d='M8 9h8M8 13h5'/></svg>"}What's new</div>
+<div class="item" data-panel="security">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6Z'/><path d='m9 12 2 2 4-4'/></svg>"}Security</div>
 <div class="item" data-panel="messages">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M4 5h16v11H8l-4 4Z'/><path d='M8 9h8M8 12h5'/></svg>"}Message log</div>
 <div class="item" data-panel="account">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><circle cx='12' cy='8' r='4'/><path d='M4 21a8 8 0 0 1 16 0'/></svg>"}Account</div>
 <div style="border-top:1px solid var(--card-border);margin:10px 0"></div>
@@ -464,6 +472,58 @@ ${liveWidget()}
 <div class="row" style="margin:10px 0"><input type="search" id="ml-search" placeholder="Filter by user, channel or text…" style="max-width:420px"><span class="badge" id="ml-count"></span></div>
 <div id="ml-list" class="grid" style="grid-template-columns:1fr;gap:10px"><div class="card"><p>Loading…</p></div></div>
 </div>
+<div class="panel" id="panel-servers">
+<div class="eyebrow">Servers</div><h2>Your <span class="hl">servers</span></h2>
+<p id="sv-note">Reported by the app. Search, sort, and spot the ones you own.</p>
+<div class="row" style="margin:10px 0"><input type="search" id="sv-search" placeholder="Search servers…" style="max-width:420px"><span class="badge" id="sv-count"></span></div>
+<div id="sv-list" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px"><div class="card"><p>Loading…</p></div></div>
+</div>
+<div class="panel" id="panel-alerts">
+<div class="eyebrow">Alerts</div><h2>Notifier <span class="hl">keywords</span> &amp; webhook</h2>
+<p>Edit what the Notifier plugin watches for. Saved to the app within two minutes.</p>
+<div class="card">
+<b>Keywords</b><br><small style="color:var(--muted)">Comma separated words or phrases. Any message containing one notifies you.</small>
+<div class="row" style="margin:8px 0 14px"><input type="search" id="al-keywords" placeholder="snore, my name, giveaway" style="flex:1;border-radius:12px"></div>
+<b>Webhook URL</b><br><small style="color:var(--muted)">Every event is also posted to this Discord webhook. Leave empty to turn off. The current value is never shown here.</small>
+<div class="row" style="margin:8px 0 14px"><input type="search" id="al-webhook" placeholder="https://discord.com/api/webhooks/…" style="flex:1;border-radius:12px"><span class="badge" id="al-webhook-state"></span></div>
+<div class="row"><a class="btn" id="al-save" href="#">Save alerts</a><a class="btn" id="al-clear-webhook" href="#" style="background:transparent">Remove webhook</a></div>
+</div>
+</div>
+<div class="panel" id="panel-snippets">
+<div class="eyebrow">Snippets</div><h2>Text <span class="hl">snippets</span></h2>
+<p>One per line as <code>trigger = replacement</code>. The TextSnippets plugin expands them before a message is sent.</p>
+<div class="card"><textarea id="sn-text" rows="12" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.04);border:1px solid var(--card-border);border-radius:12px;color:var(--fg);padding:12px;font-family:ui-monospace,monospace;font-size:.85rem" placeholder=";shrug = ¯\_(ツ)_/¯"></textarea>
+<div class="row" style="margin-top:10px"><a class="btn" id="sn-save" href="#">Save snippets</a><span class="badge" id="sn-count"></span></div></div>
+</div>
+<div class="panel" id="panel-css">
+<div class="eyebrow">Quick CSS</div><h2>Edit your <span class="hl">Quick CSS</span></h2>
+<p id="css-note">Changes are synced to the app within two minutes and applied live.</p>
+<div class="card"><textarea id="css-text" rows="18" spellcheck="false" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.04);border:1px solid var(--card-border);border-radius:12px;color:var(--fg);padding:12px;font-family:ui-monospace,monospace;font-size:.85rem" placeholder="/* your css */"></textarea>
+<div class="row" style="margin-top:10px"><a class="btn" id="css-save" href="#">Save CSS</a><a class="btn" id="css-download" href="#" style="background:transparent">Download</a><span class="badge" id="css-state"></span></div></div>
+</div>
+<div class="panel" id="panel-backups">
+<div class="eyebrow">Backups</div><h2>Settings <span class="hl">history</span></h2>
+<p>The last eight versions of your synced settings are kept. Restore one and the app picks it up within two minutes.</p>
+<div class="card" style="padding:6px 0"><table><thead><tr><th>Saved</th><th>Version</th><th>Size</th><th>Checksum</th><th></th></tr></thead><tbody id="bk-rows"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
+<div class="row"><a class="btn" id="bk-download" href="#">Download current settings</a></div>
+</div>
+<div class="panel" id="panel-activity">
+<div class="eyebrow">Activity</div><h2>When you're <span class="hl">most active</span></h2>
+<p>Messages sent per hour of the day, from the Statistics plugin.</p>
+<div class="card"><div id="hm" style="display:grid;grid-template-columns:repeat(24,1fr);gap:4px"></div><div style="display:flex;justify-content:space-between;color:var(--muted);font-size:.72rem;margin-top:6px"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:00</span></div><p id="hm-note" style="margin:10px 0 0"></p></div>
+<div class="kpis" id="act-kpis"></div>
+</div>
+<div class="panel" id="panel-news">
+<div class="eyebrow">What's new</div><h2>Latest <span class="hl">release</span></h2>
+<div id="news" class="card"><p>Loading…</p></div>
+</div>
+<div class="panel" id="panel-security">
+<div class="eyebrow">Security</div><h2>Keep it <span class="hl">locked down</span></h2>
+<div class="card"><h3>Public profile</h3><p>Show a public page at <code id="pp-url"></code> with your name, avatar, client version and plugin count. Off by default.</p>
+<div class="vc-ctl"><div><b>Public profile page</b><br><small>Anyone with the link can see it.</small></div><label class="sw"><input type="checkbox" id="sec-public"><span></span></label></div></div>
+<div class="card" style="margin-top:14px"><h3>Sessions</h3><p>Dashboard sessions last 30 days. Logging out here only affects this browser.</p><div class="row"><a class="btn" href="/logout">Log out of this browser</a></div></div>
+<div class="card danger" style="margin-top:14px"><h3>Rotate cloud secret</h3><p>Signs every device out of the cloud. Your data stays. Reconnect from the app under Cloud → Authenticate with Cloud.</p><div class="row"><a class="btn danger" id="sec-rotate" href="#">Rotate secret</a></div></div>
+</div>
 <div class="panel" id="panel-account">
 <div class="eyebrow">Account</div><h2>Manage your <span class="hl">account</span></h2>
 <div class="card"><h3>Discord</h3><p>User id <code id="acc-id">${escapeHtml(user.id)}</code>. Sessions on this website last 30 days.</p></div>
@@ -515,7 +575,74 @@ ${liveWidget()}
     renderGhost();
     renderChart();
     renderControls();
+    renderServers();
+    renderAlerts();
+    renderSnippets();
+    renderActivity();
+    loadBackups();
+    loadCss();
+    loadNews();
+    $("pp-url").textContent = location.origin + "/u/" + u.id;
+    $("sec-public").checked = !!((me.remote && "publicProfile" in me.remote) ? me.remote.publicProfile : me.device && me.device.publicProfile);
   }
+  function renderServers() {
+    const list = (me.device && me.device.guilds) || [];
+    const q = ($("sv-search").value || "").toLowerCase();
+    const rows = list.filter(g => !q || g.name.toLowerCase().includes(q)).sort((a, b) => (b.owner - a.owner) || a.name.localeCompare(b.name));
+    $("sv-count").textContent = list.length + " servers · " + list.filter(g => g.owner).length + " owned";
+    $("sv-list").innerHTML = rows.length ? rows.map(g => "<div class='card' style='padding:12px 14px;display:flex;gap:10px;align-items:center'>" + (g.icon ? "<img src='https://cdn.discordapp.com/icons/" + esc(g.id) + "/" + esc(g.icon) + ".png?size=64' style='width:36px;height:36px;border-radius:10px'>" : "<div style='width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.08);display:grid;place-items:center'><b>" + esc(g.name.slice(0, 1)) + "</b></div>") + "<div style='min-width:0'><b style='display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'>" + esc(g.name) + "</b><small style='color:var(--muted)'>" + (g.owner ? "owner · " : "") + esc(g.id) + "</small></div></div>").join("") : "<div class='card'><p>" + (list.length ? "No matches." : "The app hasn't reported your servers yet.") + "</p></div>";
+  }
+  $("sv-search").addEventListener("input", renderServers);
+  function renderAlerts() {
+    const d = me.device || {}, r = me.remote || {};
+    $("al-keywords").value = "keywords" in r ? r.keywords : (d.keywords || "");
+    $("al-webhook-state").textContent = ("webhook" in r ? r.webhook : d.webhook) ? "webhook set" : "no webhook";
+  }
+  $("al-save").addEventListener("click", e => { e.preventDefault(); const patch = { keywords: $("al-keywords").value }; if ($("al-webhook").value.trim()) patch.webhook = $("al-webhook").value.trim(); sendRemote(patch).then(() => { $("al-webhook").value = ""; renderAlerts(); }); });
+  $("al-clear-webhook").addEventListener("click", e => { e.preventDefault(); sendRemote({ webhook: "" }).then(renderAlerts); });
+  function renderSnippets() {
+    const d = me.device || {}, r = me.remote || {};
+    const v = "snippets" in r ? r.snippets : (d.snippets || "");
+    $("sn-text").value = v;
+    $("sn-count").textContent = v.split("\n").filter(l => l.includes("=")).length + " snippets";
+  }
+  $("sn-text").addEventListener("input", () => { $("sn-count").textContent = $("sn-text").value.split("\n").filter(l => l.includes("=")).length + " snippets"; });
+  $("sn-save").addEventListener("click", e => { e.preventDefault(); sendRemote({ snippets: $("sn-text").value }); });
+  function renderActivity() {
+    const h = (me.stats && me.stats.hourly) || [];
+    const max = Math.max(1, ...h);
+    $("hm").innerHTML = Array.from({ length: 24 }, (_, i) => { const v = h[i] || 0; return "<div title='" + String(i).padStart(2, "0") + ":00 · " + v + " sent' style='height:34px;border-radius:6px;background:rgba(139,180,255," + (0.08 + 0.92 * v / max).toFixed(2) + ")'></div>"; }).join("");
+    const peak = h.length ? h.indexOf(Math.max(...h)) : -1;
+    $("hm-note").textContent = h.some(Boolean) ? "Peak hour: " + String(peak).padStart(2, "0") + ":00 with " + h[peak] + " messages." : "No hourly data yet. Keep the Statistics plugin on.";
+    const daily = (me.stats && me.stats.daily) || {};
+    const days = Object.entries(daily).sort();
+    const week = days.slice(-7).reduce((a, [, v]) => a + (v.sent || 0), 0);
+    const best = days.reduce((b, d) => (d[1].sent || 0) > (b[1].sent || 0) ? d : b, ["–", { sent: 0 }]);
+    const streak = (() => { let n = 0; for (let i = 0; i < 60; i++) { const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10); if ((daily[d] || {}).sent > 0) n++; else if (i > 0) break; } return n; })();
+    $("act-kpis").innerHTML = [[week, "Sent this week"], [best[0].slice(5), "Busiest day"], [best[1].sent || 0, "Messages that day"], [streak + "d", "Active streak"]].map(([v, l]) => "<div class='kpi'><strong>" + esc(v) + "</strong><small>" + l + "</small></div>").join("");
+  }
+  async function loadBackups() {
+    const r = await fetch("/v1/me/backups").then(r => r.json()).catch(() => ({ backups: [] }));
+    const list = r.backups || [];
+    $("bk-rows").innerHTML = list.length ? list.map(b => "<tr><td>" + esc(fmtDate(b.saved_at)) + "</td><td>v" + b.version + "</td><td>" + kb(b.size) + "</td><td><code>" + esc(b.checksum) + "</code></td><td><a class='btn' href='#' data-restore='" + b.id + "' style='padding:6px 12px'>Restore</a></td></tr>").join("") : "<tr><td colspan='5'>No previous versions yet. A backup is kept every time your settings change.</td></tr>";
+    $("bk-rows").querySelectorAll("[data-restore]").forEach(a => a.addEventListener("click", async e => { e.preventDefault(); if (!confirm("Restore this version? The app applies it within 2 min.")) return; await post("/v1/me/restore", { id: Number(a.dataset.restore) }); load(); }));
+  }
+  $("bk-download").addEventListener("click", async e => { e.preventDefault(); const r = await fetch("/v1/me/key/settings").then(r => r.json()); const b = new Blob([r.value || "{}"], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "snoreclient-settings.json"; a.click(); });
+  async function loadCss() {
+    const r = await fetch("/v1/me/key/quickCss").then(r => r.json()).catch(() => ({}));
+    $("css-text").value = r.value || "";
+    $("css-state").textContent = r.value == null ? "nothing synced yet" : "v" + r.version + " · " + kb(r.value.length);
+  }
+  $("css-save").addEventListener("click", async e => { e.preventDefault(); $("css-state").textContent = "saving…"; await fetch("/v1/me/key/quickCss", { method: "PUT", headers: { "Content-Type": "text/css" }, body: $("css-text").value }); $("css-state").textContent = "saved, the app applies it within 2 min"; });
+  $("css-download").addEventListener("click", e => { e.preventDefault(); const b = new Blob([$("css-text").value], { type: "text/css" }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "quickCss.css"; a.click(); });
+  async function loadNews() {
+    const r = await fetch("/releases/client").then(r => r.json()).catch(() => null);
+    if (!r || !r.tag_name) { $("news").innerHTML = "<p>No release information available.</p>"; return; }
+    const mine = me.device && me.device.hash;
+    $("news").innerHTML = "<h3>" + esc(r.name || r.tag_name) + " <span class='badge'>" + esc(r.tag_name) + "</span></h3><p style='color:var(--muted);font-size:.85rem'>Published " + esc(fmtDate(Date.parse(r.published_at))) + (mine ? " · you are on " + esc(mine) : "") + "</p><pre style='white-space:pre-wrap;font-family:inherit;font-size:.92rem;line-height:1.6'>" + esc(r.body || "No notes.") + "</pre>" + (r.html_url ? "<div class='row'><a class='btn' href='" + esc(r.html_url) + "'>Open on GitHub</a></div>" : "");
+  }
+  $("sec-public").addEventListener("change", e => sendRemote({ publicProfile: e.target.checked }));
+  $("sec-rotate").addEventListener("click", async e => { e.preventDefault(); if (!confirm("Rotate the cloud secret? Every device will need to reconnect.")) return; await fetch("/v1/me/rotate", { method: "POST" }); alert("Done. Reconnect from the app's Cloud tab."); });
   function post(path, body) { return fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(r => r.json()); }
   async function sendRemote(patch) {
     $("ctl-state").textContent = "sending…";
@@ -589,5 +716,32 @@ ${liveWidget()}
 })();
 </script>`, { wide: true });
 
-return { page, landing, privacy, download, plugins, plugin, accounts, dashboard };
+const status = ({ runtime, users, dbMs = 0, live = false, liveMs = 0, online = 0, uptime }) => page("Status", `
+<div class="eyebrow">Status</div><h2>All systems <span class="hl">${live || runtime === "node" ? "operational" : "degraded"}</span></h2>
+<p>Live checks against this ${escapeHtml(config.siteName)} instance, run when you loaded this page.</p>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+<div class="card"><h3>API</h3><p><span class="badge"><span class="dot"></span>up</span><br>${escapeHtml(runtime === "cloudflare" ? "Cloudflare Workers" : "Node")}${uptime ? ` · up ${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m` : ""}</p></div>
+<div class="card"><h3>Database</h3><p><span class="badge"><span class="dot"></span>up</span><br>${users} connected accounts · ${dbMs} ms</p></div>
+<div class="card"><h3>Live presence</h3><p><span class="badge"><span class="dot"${live ? "" : " style=\"background:var(--muted);box-shadow:none\""}></span>${live ? "up" : runtime === "node" ? "n/a" : "down"}</span><br>${live ? `${online} online · ${liveMs} ms` : "WebSocket hub not reachable"}</p></div>
+<div class="card"><h3>Releases</h3><p><span class="badge"><span class="dot"></span>GitHub</span><br><a href="/releases/client">/releases/client</a></p></div>
+</div>
+<p style="margin-top:18px;color:var(--muted);font-size:.85rem">Machine readable: <code>/health</code> and <code>/v1/live.json</code>.</p>`);
+
+const profile = ({ user, profile, device, online }) => {
+    const name = profile?.global_name || user.username;
+    const avatar = profile?.avatar ? `https://cdn.discordapp.com/avatars/${escapeHtml(user.id)}/${escapeHtml(profile.avatar)}.png?size=256` : "/assets/icon.png";
+    const plugins = device?.plugins ? device.plugins.filter(p => p.enabled).length : null;
+    return page(name, `
+<div class="card" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">
+<img src="${avatar}" alt="" style="width:96px;height:96px;border-radius:50%;border:3px solid rgba(255,255,255,.12)">
+<div style="flex:1;min-width:200px"><div class="eyebrow">SnoreClient user</div><h2 style="margin:0">${escapeHtml(name)}</h2><p style="margin:4px 0 10px;color:var(--muted)">@${escapeHtml(user.username)}</p>
+<div class="chips"><span class="badge"><span class="dot"${online ? "" : " style=\"background:var(--muted);box-shadow:none\""}></span>${online ? "online now" : "offline"}</span>
+<span class="badge">since ${new Date(user.created_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</span>
+${device ? `<span class="badge">${escapeHtml(device.platform || "")} · v${escapeHtml(device.version || "")}</span>` : ""}
+${plugins !== null ? `<span class="badge">${plugins} plugins on</span>` : ""}
+${device?.guilds ? `<span class="badge">${device.guilds.length} servers</span>` : ""}</div></div></div>
+<p style="margin-top:18px;color:var(--muted);font-size:.85rem">This page is shown because its owner turned on <b>Public profile</b> in their dashboard. <a href="/download">Get SnoreClient</a>.</p>`);
+};
+
+return { page, landing, privacy, download, plugins, plugin, accounts, dashboard, status, profile };
 }

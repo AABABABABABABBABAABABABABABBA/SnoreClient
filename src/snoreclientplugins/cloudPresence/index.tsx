@@ -27,6 +27,11 @@ const settings = definePluginSettings({
         default: false,
         onChange: () => connect(),
     },
+    publicProfile: {
+        type: OptionType.BOOLEAN,
+        description: "Public profile page. Shows your name, avatar, client version and plugin count at /u/<your id> on the SnoreClient site.",
+        default: false,
+    },
     uploadMessageLog: {
         type: OptionType.BOOLEAN,
         description: "Show deleted and edited messages on your web dashboard. Only works while the MessageLogger plugin is enabled.",
@@ -204,6 +209,11 @@ async function publishDevice() {
         privateMode: !!(isPluginEnabled("PrivateMode") && Settings.plugins.PrivateMode?.enabled),
         awayReply: isPluginEnabled("AwayReply"),
         awayMessage: Settings.plugins.AwayReply?.message ?? "",
+        keywords: Settings.plugins.Notifier?.keywords ?? "",
+        webhook: Settings.plugins.Notifier?.webhook ? "set" : "",
+        snippets: Settings.plugins.TextSnippets?.snippets ?? "",
+        publicProfile: settings.store.publicProfile,
+        guilds: Object.values(GuildStore.getGuilds()).map(g => ({ id: g.id, name: g.name, icon: g.icon, owner: g.ownerId === UserStore.getCurrentUser()?.id })),
         plugins,
         updatedAt: Date.now(),
     }).catch(() => { });
@@ -223,6 +233,10 @@ interface RemoteCommands {
     privateMode?: boolean;
     awayReply?: boolean;
     awayMessage?: string;
+    keywords?: string;
+    webhook?: string;
+    snippets?: string;
+    publicProfile?: boolean;
     plugins?: Record<string, boolean>;
 }
 
@@ -251,6 +265,10 @@ async function applyRemote(value: unknown) {
     }
     if (typeof cmd.awayReply === "boolean") togglePlugin("AwayReply", cmd.awayReply);
     if (typeof cmd.awayMessage === "string" && cmd.awayMessage.trim()) (Settings.plugins.AwayReply ??= { enabled: false }).message = cmd.awayMessage.slice(0, 500);
+    if (typeof cmd.keywords === "string") (Settings.plugins.Notifier ??= { enabled: false }).keywords = cmd.keywords.slice(0, 500);
+    if (typeof cmd.webhook === "string") (Settings.plugins.Notifier ??= { enabled: false }).webhook = cmd.webhook.slice(0, 500);
+    if (typeof cmd.snippets === "string") (Settings.plugins.TextSnippets ??= { enabled: false }).snippets = cmd.snippets.slice(0, 8000);
+    if (typeof cmd.publicProfile === "boolean") settings.store.publicProfile = cmd.publicProfile;
     if (cmd.plugins) for (const [name, on] of Object.entries(cmd.plugins)) if (typeof on === "boolean") togglePlugin(name, on);
 
     await publishDevice();

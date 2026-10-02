@@ -376,6 +376,13 @@ route("POST", "/v2/sync", async ({ req, db, cfg }) => {
         }
         const version = (prev?.version ?? 0) + 1;
         if (!prev) keyCount++;
+        if (up.key === "settings" && prev && prev.checksum !== checksum) {
+            const old = await db.prepare("SELECT value FROM data_v2 WHERE user_id = ? AND key = 'settings'").bind(user.id).first();
+            if (old) {
+                statements.push(db.prepare("INSERT INTO data_history (user_id, key, version, checksum, value, saved_at) VALUES (?, 'settings', ?, ?, ?, ?)").bind(user.id, prev.version, prev.checksum, old.value, now));
+                statements.push(db.prepare("DELETE FROM data_history WHERE user_id = ? AND key = 'settings' AND id NOT IN (SELECT id FROM data_history WHERE user_id = ? AND key = 'settings' ORDER BY saved_at DESC LIMIT 8)").bind(user.id, user.id));
+            }
+        }
         existing.set(up.key, { key: up.key, version, checksum });
         statements.push(db.prepare(`
             INSERT INTO data_v2 (user_id, key, version, checksum, value, updated_at) VALUES (?, ?, ?, ?, ?, ?)
@@ -476,14 +483,60 @@ route("GET", "/v1/me", async ({ req, cfg, db, env }) => {
     }, 200, { "Cache-Control": "no-store" });
 });
 
+async function writeKey(db, userId, key, bytes) {
+    const checksum = (await sha256(bytes)).slice(0, 16);
+    const prev = await db.prepare("SELECT version FROM data_v2 WHERE user_id = ? AND key = ?").bind(userId, key).first();
+    await db.prepare(`
+        INSERT INTO data_v2 (user_id, key, version, checksum, value, updated_at) VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(user_id, key) DO UPDATE SET version = excluded.version, checksum = excluded.checksum, value = excluded.value, updated_at = excluded.updated_at
+    `).bind(userId, key, (prev?.version ?? 0) + 1, checksum, b64.encode(bytes), Date.now()).run();
+}
+
+route("GET", "/v1/me/backups", async ({ req, cfg, db }) => {
+    const user = await requireSession(req, cfg, db);
+    const { results } = await db.prepare("SELECT id, version, checksum, length(value) AS size, saved_at FROM data_history WHERE user_id = ? AND key = 'settings' ORDER BY saved_at DESC").bind(user.id).all();
+    return json({ backups: results.map(h => ({ ...h, size: Math.round(Number(h.size) * 0.75) })) });
+});
+
+route("POST", "/v1/me/restore", async ({ req, cfg, db }) => {
+    const user = await requireSession(req, cfg, db);
+    let body;
+    try { body = JSON.parse(new TextDecoder().decode(await readBody(req, 1024))); } catch { throw new HttpError(400, "Malformed JSON body"); }
+    const h = await db.prepare("SELECT value FROM data_history WHERE id = ? AND user_id = ?").bind(Number(body.id), user.id).first();
+    if (!h) throw new HttpError(404, "No such backup");
+    await writeKey(db, user.id, "settings", b64.decode(h.value));
+    return json({ ok: true });
+});
+
+route("GET", "/v1/me/key/:key", async ({ req, cfg, db, params }) => {
+    const user = await requireSession(req, cfg, db);
+    if (!["quickCss", "settings"].includes(params.key)) throw new HttpError(400, "Key not readable here");
+    const row = await db.prepare("SELECT value, version FROM data_v2 WHERE user_id = ? AND key = ?").bind(user.id, params.key).first();
+    if (!row) return json({ key: params.key, value: null });
+    return json({ key: params.key, value: new TextDecoder().decode(b64.decode(row.value)), version: row.version });
+});
+
+route("PUT", "/v1/me/key/:key", async ({ req, cfg, db, params }) => {
+    const user = await requireSession(req, cfg, db);
+    if (params.key !== "quickCss") throw new HttpError(400, "Only quickCss can be written here");
+    await writeKey(db, user.id, "quickCss", await readBody(req, 512 * 1024));
+    return json({ ok: true });
+});
+
+route("POST", "/v1/me/rotate", async ({ req, cfg, db }) => {
+    const user = await requireSession(req, cfg, db);
+    await db.prepare("UPDATE users SET secret_hash = ? WHERE id = ?").bind(await sha256(newSecret()), user.id).run();
+    return json({ ok: true });
+});
+
 // Dashboard writes commands here; the client pulls them within two minutes and applies them.
 route("POST", "/v1/me/remote", async ({ req, cfg, db }) => {
     const user = await requireSession(req, cfg, db);
     let body;
     try { body = JSON.parse(new TextDecoder().decode(await readBody(req, 64 * 1024))); } catch { throw new HttpError(400, "Malformed JSON body"); }
     const allowed = {};
-    for (const k of ["ghostMode", "privateMode", "awayReply"]) if (typeof body[k] === "boolean") allowed[k] = body[k];
-    if (typeof body.awayMessage === "string") allowed.awayMessage = body.awayMessage.slice(0, 500);
+    for (const k of ["ghostMode", "privateMode", "awayReply", "publicProfile"]) if (typeof body[k] === "boolean") allowed[k] = body[k];
+    for (const k of ["awayMessage", "keywords", "webhook", "snippets"]) if (typeof body[k] === "string") allowed[k] = body[k].slice(0, k === "snippets" ? 8000 : 500);
     if (body.plugins && typeof body.plugins === "object") {
         allowed.plugins = {};
         for (const [name, on] of Object.entries(body.plugins)) if (/^[A-Za-z0-9]{1,64}$/.test(name) && typeof on === "boolean") allowed.plugins[name] = on;
@@ -517,6 +570,7 @@ route("POST", "/v1/me/disconnect", async ({ req, cfg, db }) => {
         db.prepare("DELETE FROM data_v2 WHERE user_id = ?").bind(user.id),
         db.prepare("DELETE FROM settings_v1 WHERE user_id = ?").bind(user.id),
         db.prepare("DELETE FROM profiles WHERE user_id = ?").bind(user.id),
+        db.prepare("DELETE FROM data_history WHERE user_id = ?").bind(user.id),
         db.prepare("DELETE FROM users WHERE id = ?").bind(user.id),
     ]);
     return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "Content-Type": "application/json", "Set-Cookie": sessionCookie("", 0) } });
@@ -529,6 +583,25 @@ route("GET", "/", async ({ db, pages, cfg }) => {
 });
 route("GET", "/accounts", async ({ cfg, db, pages }) => html(pages.accounts(cfg.publicAccounts ? await listAccounts(db) : [])));
 route("GET", "/privacy", ({ pages }) => html(pages.privacy()));
+route("GET", "/status", async ({ env, db, pages }) => {
+    const t0 = Date.now();
+    const row = await db.prepare("SELECT COUNT(*) AS n FROM users").first();
+    const dbMs = Date.now() - t0;
+    let live = false, liveMs = 0, online = 0;
+    try { const t1 = Date.now(); const snap = await (await hub(env).fetch("https://live/snapshot")).json(); liveMs = Date.now() - t1; live = true; online = snap.count; } catch { }
+    return html(pages.status({ runtime: "cloudflare", users: row?.n ?? 0, dbMs, live, liveMs, online }));
+});
+route("GET", "/u/:id", async ({ env, db, pages, params }) => {
+    if (!/^\d{15,22}$/.test(params.id)) throw new HttpError(404, "Not found");
+    const user = await db.prepare("SELECT id, username, created_at, last_seen_at FROM users WHERE id = ?").bind(params.id).first();
+    const read = async key => { const r = user && await db.prepare("SELECT value FROM data_v2 WHERE user_id = ? AND key = ?").bind(user.id, key).first(); if (!r) return null; try { return JSON.parse(new TextDecoder().decode(b64.decode(r.value))); } catch { return null; } };
+    const remote = await read("remote");
+    if (!user || !remote?.publicProfile) throw new HttpError(404, "This profile is private or does not exist");
+    const profile = await db.prepare("SELECT avatar, global_name FROM profiles WHERE user_id = ?").bind(user.id).first();
+    let online = false;
+    try { const snap = await (await hub(env).fetch("https://live/snapshot")).json(); online = snap.online.some(u => u.id === user.id); } catch { }
+    return html(pages.profile({ user, profile, device: await read("device"), online }));
+});
 route("GET", "/download", ({ pages }) => html(pages.download()));
 route("GET", "/health", () => json({ ok: true, runtime: "cloudflare" }));
 route("GET", "/discord", ({ env, cfg }) => Response.redirect(env.DISCORD_INVITE || `https://github.com/${cfg.githubRepo}/discussions`, 302));

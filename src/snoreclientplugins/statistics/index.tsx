@@ -37,6 +37,13 @@ interface Totals {
     firstRun: number;
     busiestChannels: Record<string, number>;
     daily: Record<string, { sent: number; received: number; voice: number; }>;
+    hourly: number[];
+}
+
+function hour() {
+    totals.hourly ??= new Array(24).fill(0);
+    if (totals.hourly.length !== 24) totals.hourly = new Array(24).fill(0);
+    totals.hourly[new Date().getHours()]++;
 }
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -49,7 +56,7 @@ function bucket() {
     return b;
 }
 
-const EMPTY: Totals = { sent: 0, received: 0, dmsReceived: 0, mentions: 0, voiceSeconds: 0, uptimeSeconds: 0, sessions: 0, firstRun: Date.now(), busiestChannels: {}, daily: {} };
+const EMPTY: Totals = { sent: 0, received: 0, dmsReceived: 0, mentions: 0, voiceSeconds: 0, uptimeSeconds: 0, sessions: 0, firstRun: Date.now(), busiestChannels: {}, daily: {}, hourly: [] };
 
 let totals: Totals = { ...EMPTY };
 let timer: ReturnType<typeof setInterval> | undefined;
@@ -76,6 +83,7 @@ async function publish() {
         pluginsEnabled: Object.keys(Plugins).filter(isPluginEnabled).length,
         busiestChannels: busiest,
         daily: totals.daily ?? {},
+        hourly: totals.hourly ?? [],
         updatedAt: Date.now(),
     }).catch(() => { });
 }
@@ -163,6 +171,7 @@ export default definePlugin({
     onBeforeMessageSend(channelId) {
         totals.sent++;
         bucket().sent++;
+        hour();
         totals.busiestChannels[channelId] = (totals.busiestChannels[channelId] ?? 0) + 1;
         dirty = true;
     },

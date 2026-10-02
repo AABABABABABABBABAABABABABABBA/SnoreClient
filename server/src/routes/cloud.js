@@ -164,12 +164,49 @@ export const cloudRoutes = {
         }, { "Cache-Control": "no-store" });
     },
 
+    "GET /v1/me/backups": (req, res) => {
+        const user = requireSession(req);
+        json(res, 200, { backups: dataV2.history(user.id, "settings").map(h => ({ ...h, size: Math.round(h.size * 0.75) })) });
+    },
+
+    "POST /v1/me/restore": async (req, res) => {
+        const user = requireSession(req);
+        const { id } = await readJson(req, 1024);
+        const h = dataV2.historyEntry(Number(id), user.id);
+        if (!h) throw new HttpError(404, "No such backup");
+        dataV2.put(user.id, "settings", h.checksum, h.value);
+        json(res, 200, { ok: true });
+    },
+
+    "GET /v1/me/key/:key": (req, res, url, params) => {
+        const user = requireSession(req);
+        if (!["quickCss", "settings"].includes(params.key)) throw new HttpError(400, "Key not readable here");
+        const row = dataV2.get(user.id, params.key);
+        if (!row) return json(res, 200, { key: params.key, value: null });
+        json(res, 200, { key: params.key, value: Buffer.from(row.value).toString("utf8"), version: row.version });
+    },
+
+    "PUT /v1/me/key/:key": async (req, res, url, params) => {
+        const user = requireSession(req);
+        if (params.key !== "quickCss") throw new HttpError(400, "Only quickCss can be written here");
+        const body = await readBody(req, 512 * 1024);
+        const bytes = Buffer.from(body);
+        dataV2.put(user.id, "quickCss", checksumOf(bytes), bytes);
+        json(res, 200, { ok: true });
+    },
+
+    "POST /v1/me/rotate": (req, res) => {
+        const user = requireSession(req);
+        users.rotateSecret(user.id, hashSecret(newSecret()));
+        json(res, 200, { ok: true });
+    },
+
     "POST /v1/me/remote": async (req, res) => {
         const user = requireSession(req);
         const body = await readJson(req, 64 * 1024);
         const allowed = {};
-        for (const k of ["ghostMode", "privateMode", "awayReply"]) if (typeof body[k] === "boolean") allowed[k] = body[k];
-        if (typeof body.awayMessage === "string") allowed.awayMessage = body.awayMessage.slice(0, 500);
+        for (const k of ["ghostMode", "privateMode", "awayReply", "publicProfile"]) if (typeof body[k] === "boolean") allowed[k] = body[k];
+        for (const k of ["awayMessage", "keywords", "webhook", "snippets"]) if (typeof body[k] === "string") allowed[k] = body[k].slice(0, k === "snippets" ? 8000 : 500);
         if (body.plugins && typeof body.plugins === "object") {
             allowed.plugins = {};
             for (const [name, on] of Object.entries(body.plugins)) if (/^[A-Za-z0-9]{1,64}$/.test(name) && typeof on === "boolean") allowed.plugins[name] = on;
@@ -193,6 +230,7 @@ export const cloudRoutes = {
     "POST /v1/me/disconnect": (req, res) => {
         const user = requireSession(req);
         profiles.delete(user.id);
+        dataV2.deleteHistory(user.id);
         users.delete(user.id);
         res.writeHead(200, { "Content-Type": "application/json", "Set-Cookie": sessionCookie("", 0) });
         res.end(JSON.stringify({ ok: true }));

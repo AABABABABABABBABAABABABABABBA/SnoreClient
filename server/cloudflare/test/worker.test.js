@@ -122,3 +122,30 @@ test("web dashboard session", async () => {
     assert.equal((await call("/v1/me/disconnect", { method: "POST", headers: { Cookie: cookie } })).status, 200);
     assert.equal((await call("/v1/me", { headers: { Cookie: cookie } })).status, 401);
 });
+
+test("settings history is kept and can be restored from the dashboard", async () => {
+    const uid = "523456789012345678";
+    const hash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("h1")))].map(b => b.toString(16).padStart(2, "0")).join("");
+    await DB.prepare("INSERT INTO users VALUES (?, ?, ?, ?, ?)").bind(uid, "hist", hash, 1, 1).run();
+    const a = btoa(`h1:${uid}`);
+    const up = v => call("/v2/sync", { method: "POST", headers: { Authorization: a, "Content-Type": "application/json" }, body: JSON.stringify({ client_manifest: [], uploads: [{ key: "settings", value: btoa(v) }] }) });
+    assert.equal((await up('{"a":1}')).status, 200);
+    assert.equal((await up('{"a":2}')).status, 200);
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey("raw", enc.encode("x:snore-session"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const payload = `${uid}.${Date.now() + 60_000}`;
+    const sig = new Uint8Array(await crypto.subtle.sign("HMAC", key, enc.encode(payload)));
+    const cookie = `snore_session=${payload}.${btoa(String.fromCharCode(...sig)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")}`;
+    const backups = await (await call("/v1/me/backups", { headers: { Cookie: cookie } })).json();
+    assert.equal(backups.backups.length, 1);
+    const r = await call("/v1/me/restore", { method: "POST", headers: { Cookie: cookie, "Content-Type": "application/json" }, body: JSON.stringify({ id: backups.backups[0].id }) });
+    assert.equal(r.status, 200);
+    const cur = await (await call("/v1/me/key/settings", { headers: { Cookie: cookie } })).json();
+    assert.equal(cur.value, '{"a":1}');
+    assert.equal((await call("/v1/me/key/quickCss", { method: "PUT", headers: { Cookie: cookie }, body: "body{}" })).status, 200);
+    assert.equal((await (await call("/v1/me/key/quickCss", { headers: { Cookie: cookie } })).json()).value, "body{}");
+    assert.equal((await call("/status")).status, 200);
+    assert.equal((await call("/u/" + uid)).status, 404);
+    assert.equal((await call("/v1/me/remote", { method: "POST", headers: { Cookie: cookie, "Content-Type": "application/json" }, body: JSON.stringify({ publicProfile: true, snippets: ";a = b" }) })).status, 200);
+    assert.equal((await call("/u/" + uid)).status, 200);
+});

@@ -495,9 +495,12 @@ export async function pullCloudKeys() {
     const updated = new Map(manifest.map(e => [e.key, e]));
     for (const dl of response.downloads) {
         const handler = keyHandlers.get(dl.key);
-        if (!handler) continue;
+        if (!handler && dl.key !== "quickCss" && dl.key !== "settings") continue;
         try {
-            await handler(JSON.parse(new TextDecoder().decode(fromBase64(dl.value))));
+            const text = new TextDecoder().decode(fromBase64(dl.value));
+            if (dl.key === "quickCss") await VencordNative.quickCss.set(text);
+            else if (dl.key === "settings") await importSettings(JSON.stringify({ settings: JSON.parse(text) }), "all", true);
+            else if (handler) await handler(JSON.parse(text));
             updated.set(dl.key, { key: dl.key, version: dl.version, checksum: dl.checksum });
         } catch (e) {
             logger.error(`Cloud key handler for ${dl.key} failed`, e);

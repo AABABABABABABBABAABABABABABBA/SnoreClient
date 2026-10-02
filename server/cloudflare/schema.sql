@@ -28,3 +28,14 @@ CREATE TABLE IF NOT EXISTS profiles (
     global_name TEXT,
     updated_at INTEGER NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS data_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    key TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    checksum TEXT NOT NULL,
+    value TEXT NOT NULL,
+    saved_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS data_history_user ON data_history(user_id, key, saved_at);
