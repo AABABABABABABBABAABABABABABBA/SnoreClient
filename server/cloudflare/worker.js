@@ -56,6 +56,7 @@ function readConfig(env) {
         siteName: env.SITE_NAME || "SnoreClient",
         maxBlobBytes: Number(env.MAX_BLOB_BYTES || 8 * 1024 * 1024),
         maxKeysPerUser: Number(env.MAX_KEYS_PER_USER || 64),
+        publicAccounts: env.PUBLIC_ACCOUNTS === "1",
     };
 }
 
@@ -164,6 +165,21 @@ const route = (method, pattern, handler) => {
 };
 
 route("GET", "/v1/", () => json({ ping: "pong", server: "snoreclient", version: "1", runtime: "cloudflare" }));
+
+async function listAccounts(db) {
+    const { results } = await db.prepare(`
+        SELECT u.id, u.username, u.created_at, u.last_seen_at,
+               (SELECT COUNT(*) FROM data_v2 d WHERE d.user_id = u.id) + (SELECT COUNT(*) FROM settings_v1 s WHERE s.user_id = u.id) AS data_count
+        FROM users u ORDER BY u.last_seen_at DESC
+    `).all();
+    return results.map(r => ({ ...r, data_count: Number(r.data_count) }));
+}
+
+route("GET", "/v1/accounts", async ({ cfg, db }) => {
+    if (!cfg.publicAccounts) throw new HttpError(404, "Not found");
+    const accounts = await listAccounts(db);
+    return json({ accounts, total: accounts.length }, 200, { "Cache-Control": "public, max-age=30" });
+});
 
 route("GET", "/v1/oauth/settings", ({ cfg }) => json({ clientId: cfg.discordClientId, redirectUri: cfg.redirectUri }));
 
@@ -330,6 +346,7 @@ route("GET", "/", async ({ db, pages }) => {
     const row = await db.prepare("SELECT COUNT(*) AS n FROM users").first();
     return html(pages.landing({ userCount: row?.n ?? 0 }));
 });
+route("GET", "/accounts", async ({ cfg, db, pages }) => html(pages.accounts(cfg.publicAccounts ? await listAccounts(db) : [])));
 route("GET", "/privacy", ({ pages }) => html(pages.privacy()));
 route("GET", "/download", ({ pages }) => html(pages.download()));
 route("GET", "/health", () => json({ ok: true, runtime: "cloudflare" }));

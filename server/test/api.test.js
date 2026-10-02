@@ -9,6 +9,7 @@ process.env.DISCORD_CLIENT_SECRET = "x";
 process.env.PORT = "0";
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "snore-"));
 process.env.PUBLIC_URL = "http://localhost";
+process.env.PUBLIC_ACCOUNTS = "1";
 
 let base, auth;
 
@@ -103,4 +104,16 @@ test("site pages render", async () => {
 test("erase account", async () => {
     assert.equal((await fetch(`${base}/v1/`, { method: "DELETE", headers: { Authorization: auth } })).status, 204);
     assert.equal((await fetch(`${base}/v1/settings`, { headers: { Authorization: auth } })).status, 401);
+});
+
+test("accounts list", async () => {
+    const { users } = await import("../src/db.js");
+    const { hashSecret } = await import("../src/auth.js");
+    users.upsert("223456789012345678", "second", hashSecret("x"));
+    const res = await fetch(`${base}/v1/accounts`);
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.total, body.accounts.length);
+    assert.ok(body.accounts.some(a => a.id === "223456789012345678" && a.username === "second" && typeof a.data_count === "number"));
+    assert.equal((await fetch(`${base}/accounts`)).status, 200);
 });

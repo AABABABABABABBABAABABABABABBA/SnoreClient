@@ -61,7 +61,7 @@ footer{margin-top:48px;color:var(--muted);font-size:.85rem;text-align:center}
 <nav>
 <img src="/assets/icon.svg" alt="">
 <a class="brand" href="/">${escapeHtml(config.siteName)}</a>
-<div class="links"><a href="/plugins">Plugins</a><a href="/download">Download</a><a href="/privacy">Privacy</a><a href="https://github.com/${escapeHtml(config.githubRepo)}">GitHub</a></div>
+<div class="links"><a href="/plugins">Plugins</a><a href="/accounts">Accounts</a><a href="/download">Download</a><a href="/privacy">Privacy</a><a href="https://github.com/${escapeHtml(config.githubRepo)}">GitHub</a></div>
 </nav>
 ${body}
 <footer>${escapeHtml(config.siteName)} is a fork of <a href="https://github.com/Equicord/Equicord">Equicord</a> and <a href="https://github.com/Vendicated/Vencord">Vencord</a>. Not affiliated with Discord.</footer>
@@ -78,6 +78,7 @@ const landing = ({ userCount }) => shell(config.siteName, `
 <div class="row">
 <a class="btn primary" href="/download">Download</a>
 <a class="btn" href="/plugins">Browse plugins</a>
+<a class="btn" href="/accounts">Connected accounts</a>
 <a class="btn" href="https://github.com/${escapeHtml(config.githubRepo)}">Source code</a>
 </div>
 <div class="grid">
@@ -158,5 +159,17 @@ ${p.tags?.length ? `<h2>Tags</h2><div class="tags">${p.tags.map(t => `<span clas
 </div>
 <p><a href="/plugins">← All plugins</a></p>`);
 
-return { page, landing, privacy, download, plugins, plugin };
+const accounts = list => page("Connected accounts", `
+<p class="lead">${list.length} account${list.length === 1 ? "" : "s"} connected to this ${escapeHtml(config.siteName)} cloud, most recently active first.</p>
+${list.length ? `<div class="grid">${list.map(a => `
+<div class="card">
+<h2>${escapeHtml(a.username)}</h2>
+<p><code>${escapeHtml(a.id)}</code></p>
+<p>Connected ${escapeHtml(new Date(a.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }))}<br>
+Last sync ${escapeHtml(new Date(a.last_seen_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }))}<br>
+${a.data_count} synced ${a.data_count === 1 ? "entry" : "entries"}</p>
+</div>`).join("")}</div>` : "<div class=\"card\"><p>No accounts yet, or this instance keeps its account list private.</p></div>"}
+<p style="margin-top:18px">Raw data: <a href="/v1/accounts"><code>GET /v1/accounts</code></a></p>`);
+
+return { page, landing, privacy, download, plugins, plugin, accounts };
 }

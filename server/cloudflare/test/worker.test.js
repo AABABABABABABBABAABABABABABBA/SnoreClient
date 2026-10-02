@@ -6,7 +6,7 @@ import worker from "../worker.js";
 import { createD1 } from "./d1shim.js";
 
 const DB = createD1(join(import.meta.dirname, "../schema.sql"));
-const env = { DB, PUBLIC_URL: "https://snore.pw", DISCORD_CLIENT_ID: "1", DISCORD_CLIENT_SECRET: "x" };
+const env = { DB, PUBLIC_URL: "https://snore.pw", DISCORD_CLIENT_ID: "1", DISCORD_CLIENT_SECRET: "x", PUBLIC_ACCOUNTS: "1" };
 const call = (path, init = {}) => worker.fetch(new Request(`https://snore.pw${path}`, init), env);
 
 const secret = "s3cret";
@@ -88,4 +88,15 @@ test("site pages", async () => {
 test("erase account", async () => {
     assert.equal((await call("/v1/", { method: "DELETE", headers: { Authorization: auth } })).status, 204);
     assert.equal((await call("/v1/settings", { headers: { Authorization: auth } })).status, 401);
+});
+
+test("accounts list", async () => {
+    await DB.prepare("INSERT INTO users VALUES (?, ?, ?, ?, ?)").bind("323456789012345678", "third", "00", 1, 2).run();
+    const res = await call("/v1/accounts");
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.total, body.accounts.length);
+    assert.equal(body.accounts[0].id, "323456789012345678");
+    assert.equal(body.accounts[0].data_count, 0);
+    assert.equal((await call("/accounts")).status, 200);
 });

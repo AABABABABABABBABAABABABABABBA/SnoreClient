@@ -31,6 +31,12 @@ function manifestOf(userId) {
 export const cloudRoutes = {
     "GET /v1/": (req, res) => json(res, 200, { ping: "pong", server: "snoreclient", version: "1" }),
 
+    "GET /v1/accounts": (req, res) => {
+        if (!config.publicAccounts) throw new HttpError(404, "Not found");
+        const accounts = users.list();
+        json(res, 200, { accounts, total: accounts.length }, { "Cache-Control": "public, max-age=30" });
+    },
+
     "GET /v1/oauth/settings": (req, res) => json(res, 200, {
         clientId: config.discordClientId,
         redirectUri: config.redirectUri,

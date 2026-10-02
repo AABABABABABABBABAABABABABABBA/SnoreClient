@@ -53,6 +53,11 @@ const stmts = {
     touchUser: db.prepare("UPDATE users SET last_seen_at = ? WHERE id = ?"),
     deleteUser: db.prepare("DELETE FROM users WHERE id = ?"),
     countUsers: db.prepare("SELECT COUNT(*) AS n FROM users"),
+    listAccounts: db.prepare(`
+        SELECT u.id, u.username, u.created_at, u.last_seen_at,
+               (SELECT COUNT(*) FROM data_v2 d WHERE d.user_id = u.id) + (SELECT COUNT(*) FROM settings_v1 s WHERE s.user_id = u.id) AS data_count
+        FROM users u ORDER BY u.last_seen_at DESC
+    `),
 
     getV1: db.prepare("SELECT written, data FROM settings_v1 WHERE user_id = ?"),
     putV1: db.prepare(`
@@ -81,6 +86,7 @@ export const users = {
     touch: id => stmts.touchUser.run(Date.now(), id),
     delete: id => stmts.deleteUser.run(id),
     count: () => stmts.countUsers.get().n,
+    list: () => stmts.listAccounts.all().map(r => ({ ...r, data_count: Number(r.data_count) })),
 };
 
 export const settingsV1 = {

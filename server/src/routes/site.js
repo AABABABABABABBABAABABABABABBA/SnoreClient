@@ -70,6 +70,7 @@ async function latestRelease() {
 
 export const siteRoutes = {
     "GET /": (req, res) => html(res, 200, pages.landing({ userCount: users.count() })),
+    "GET /accounts": (req, res) => html(res, 200, pages.accounts(config.publicAccounts ? users.list() : [])),
     "GET /privacy": (req, res) => html(res, 200, pages.privacy()),
     "GET /download": (req, res) => html(res, 200, pages.download()),
     "GET /discord": (req, res) => redirect(res, process.env.DISCORD_INVITE || `https://github.com/${config.githubRepo}/discussions`),
