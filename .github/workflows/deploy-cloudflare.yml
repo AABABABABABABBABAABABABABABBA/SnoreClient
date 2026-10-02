@@ -14,17 +14,34 @@ jobs:
         runs-on: ubuntu-latest
         if: ${{ vars.CLOUDFLARE_DEPLOY != 'false' }}
         steps:
+            - name: Check for Cloudflare credentials
+              id: creds
+              env:
+                  TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+              run: |
+                  if [ -z "$TOKEN" ] || [ -z "$ACCOUNT" ]; then
+                    echo "::warning::Skipping deploy: add the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID repository secrets (Settings > Secrets and variables > Actions) to deploy snore.pw from GitHub."
+                    echo "ok=false" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "ok=true" >> "$GITHUB_OUTPUT"
+                  fi
+
             - uses: actions/checkout@v7
+              if: steps.creds.outputs.ok == 'true'
 
             - uses: actions/setup-node@v4
+              if: steps.creds.outputs.ok == 'true'
               with:
                   node-version: 22
 
             - name: Test worker
+              if: steps.creds.outputs.ok == 'true'
               working-directory: server/cloudflare
               run: node --test test/*.test.js
 
             - name: Resolve the D1 database id
+              if: steps.creds.outputs.ok == 'true'
               working-directory: server/cloudflare
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -36,6 +53,7 @@ jobs:
                   grep database_id wrangler.toml
 
             - name: Apply D1 schema
+              if: steps.creds.outputs.ok == 'true'
               uses: cloudflare/wrangler-action@v3
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -44,6 +62,7 @@ jobs:
                   command: d1 execute snoreclient --remote --file=schema.sql
 
             - name: Deploy
+              if: steps.creds.outputs.ok == 'true'
               uses: cloudflare/wrangler-action@v3
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
