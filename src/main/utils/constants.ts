@@ -22,7 +22,7 @@ import { join } from "path";
 
 const suffix = IS_DEV ? "dev" : "";
 
-export const DATA_DIR = process.env.EQUICORD_USER_DATA_DIR ?? (
+export const DATA_DIR = process.env.SNORECLIENT_USER_DATA_DIR ?? process.env.EQUICORD_USER_DATA_DIR ?? (
     process.env.DISCORD_USER_DATA_DIR
         ? join(process.env.DISCORD_USER_DATA_DIR, "..", "SnoreClientData", suffix)
         : join(app.getPath("userData"), "..", "SnoreClient", suffix)
