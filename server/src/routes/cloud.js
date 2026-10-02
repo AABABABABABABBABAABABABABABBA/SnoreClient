@@ -145,14 +145,42 @@ export const cloudRoutes = {
         };
         const stats = readJsonKey("stats");
         const messageLog = readJsonKey("messagelog");
+        const device = readJsonKey("device");
+        const notifications = readJsonKey("notifications");
+        const ghostPings = readJsonKey("ghostpings");
+        const remote = readJsonKey("remote");
         json(res, 200, {
             user: { id: user.id, username: user.username, global_name: profile?.global_name ?? null, avatar: profile?.avatar ?? null, created_at: user.created_at, last_seen_at: user.last_seen_at },
             entries,
             legacy: v1 ? { written: v1.written, size: v1.data.length } : null,
             stats,
             messageLog,
+            device,
+            notifications,
+            ghostPings,
+            remote,
             online: false,
+            onlineUsers: [],
         }, { "Cache-Control": "no-store" });
+    },
+
+    "POST /v1/me/remote": async (req, res) => {
+        const user = requireSession(req);
+        const body = await readJson(req, 64 * 1024);
+        const allowed = {};
+        for (const k of ["ghostMode", "privateMode", "awayReply"]) if (typeof body[k] === "boolean") allowed[k] = body[k];
+        if (typeof body.awayMessage === "string") allowed.awayMessage = body.awayMessage.slice(0, 500);
+        if (body.plugins && typeof body.plugins === "object") {
+            allowed.plugins = {};
+            for (const [name, on] of Object.entries(body.plugins)) if (/^[A-Za-z0-9]{1,64}$/.test(name) && typeof on === "boolean") allowed.plugins[name] = on;
+        }
+        const existingRow = dataV2.get(user.id, "remote");
+        let existing = {};
+        if (existingRow) { try { existing = JSON.parse(Buffer.from(existingRow.value).toString("utf8")); } catch { } }
+        const merged = { ...existing, ...allowed, plugins: { ...(existing.plugins || {}), ...(allowed.plugins || {}) }, issuedAt: Date.now() };
+        const bytes = Buffer.from(JSON.stringify(merged));
+        dataV2.put(user.id, "remote", checksumOf(bytes), bytes);
+        json(res, 200, { ok: true, remote: merged });
     },
 
     "POST /v1/me/delete": (req, res) => {

@@ -36,9 +36,20 @@ interface Totals {
     sessions: number;
     firstRun: number;
     busiestChannels: Record<string, number>;
+    daily: Record<string, { sent: number; received: number; voice: number; }>;
 }
 
-const EMPTY: Totals = { sent: 0, received: 0, dmsReceived: 0, mentions: 0, voiceSeconds: 0, uptimeSeconds: 0, sessions: 0, firstRun: Date.now(), busiestChannels: {} };
+const today = () => new Date().toISOString().slice(0, 10);
+function bucket() {
+    totals.daily ??= {};
+    const key = today();
+    const b = totals.daily[key] ??= { sent: 0, received: 0, voice: 0 };
+    const keys = Object.keys(totals.daily).sort();
+    if (keys.length > 45) for (const k of keys.slice(0, keys.length - 45)) delete totals.daily[k];
+    return b;
+}
+
+const EMPTY: Totals = { sent: 0, received: 0, dmsReceived: 0, mentions: 0, voiceSeconds: 0, uptimeSeconds: 0, sessions: 0, firstRun: Date.now(), busiestChannels: {}, daily: {} };
 
 let totals: Totals = { ...EMPTY };
 let timer: ReturnType<typeof setInterval> | undefined;
@@ -64,6 +75,7 @@ async function publish() {
         firstRun: totals.firstRun,
         pluginsEnabled: Object.keys(Plugins).filter(isPluginEnabled).length,
         busiestChannels: busiest,
+        daily: totals.daily ?? {},
         updatedAt: Date.now(),
     }).catch(() => { });
 }
@@ -76,7 +88,7 @@ function save() {
 
 function tick() {
     totals.uptimeSeconds += 10;
-    if (SelectedChannelStore.getVoiceChannelId()) totals.voiceSeconds += 10;
+    if (SelectedChannelStore.getVoiceChannelId()) { totals.voiceSeconds += 10; bucket().voice += 10; }
     dirty = true;
     save();
 }
@@ -150,6 +162,7 @@ export default definePlugin({
 
     onBeforeMessageSend(channelId) {
         totals.sent++;
+        bucket().sent++;
         totals.busiestChannels[channelId] = (totals.busiestChannels[channelId] ?? 0) + 1;
         dirty = true;
     },
@@ -160,6 +173,7 @@ export default definePlugin({
             const me = UserStore.getCurrentUser()?.id;
             if (message.author.id === me) return;
             totals.received++;
+            bucket().received++;
             if (ChannelStore.getChannel(message.channel_id)?.isDM()) totals.dmsReceived++;
             if (me && message.mentions?.includes(me)) totals.mentions++;
             dirty = true;

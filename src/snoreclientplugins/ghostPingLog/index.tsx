@@ -6,7 +6,8 @@
 
 import * as DataStore from "@api/DataStore";
 import { showNotification } from "@api/Notifications";
-import { definePluginSettings } from "@api/Settings";
+import { definePluginSettings, Settings } from "@api/Settings";
+import { putCloudKey } from "@api/SettingsSync/cloudSync";
 import { Button } from "@components/Button";
 import { Flex } from "@components/Flex";
 import { Paragraph } from "@components/Paragraph";
@@ -91,6 +92,7 @@ async function record(message: Message, how: Entry["how"]) {
     entries.push(entry);
     if (entries.length > settings.store.maxEntries) entries = entries.slice(-settings.store.maxEntries);
     await DataStore.set(STORE_KEY, entries);
+    if (Settings.cloud.authenticated) putCloudKey("ghostpings", { entries: entries.slice(-200), updatedAt: Date.now() }).catch(() => { });
     await Native?.appendLine(formatLine(entry)).catch(() => { });
 
     if (settings.store.notify) {

@@ -366,6 +366,20 @@ th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;
 .pill-ok{color:var(--ok)}.pill-off{color:var(--muted)}
 .danger{border-color:rgba(244,114,182,.35)}
 .btn.danger{background:rgba(244,114,182,.12);border-color:rgba(244,114,182,.4);color:#fbcfe8}
+.vc-ctl{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--card-border)}
+.vc-ctl:last-child{border-bottom:0}
+.vc-ctl small{color:var(--muted)}
+.sw{position:relative;width:46px;height:26px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.12);transition:.2s;cursor:pointer}
+.sw span::before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.2s}
+.sw input:checked+span{background:var(--accent-2)}
+.sw input:checked+span::before{transform:translateX(20px)}
+.pl{display:flex;align-items:center;gap:12px;padding:10px 14px}
+.pl .t{flex:1;min-width:0}
+.pl .t small{color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-col{flex:1;background:linear-gradient(180deg,#8ab4ff,#5b8cff);border-radius:4px 4px 0 0;min-height:2px;opacity:.9}
+.bar-col:hover{opacity:1;filter:brightness(1.2)}
 .btn.danger:hover{background:rgba(244,114,182,.22);color:#fff}
 </style>
 <div class="dash">
@@ -375,6 +389,11 @@ th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;
 <div class="item active" data-panel="overview">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><rect x='3' y='3' width='8' height='8' rx='2'/><rect x='13' y='3' width='8' height='5' rx='2'/><rect x='13' y='10' width='8' height='11' rx='2'/><rect x='3' y='13' width='8' height='8' rx='2'/></svg>"}Overview</div>
 <div class="item" data-panel="data">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M17.5 19a4.5 4.5 0 0 0 .4-9A7 7 0 0 0 4.3 12.5 3.5 3.5 0 0 0 5.5 19Z'/></svg>"}Cloud data</div>
 <div class="item" data-panel="stats">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M4 20V10m6 10V4m6 16v-7m4 7H2'/></svg>"}Statistics</div>
+<div class="item" data-panel="controls">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><circle cx='12' cy='12' r='3'/><path d='M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z'/></svg>"}Controls</div>
+<div class="item" data-panel="plugins">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M9 2v6m6-6v6M5 8h14l-1 5a6 6 0 0 1-12 0Z'/><path d='M12 19v3'/></svg>"}Plugins</div>
+<div class="item" data-panel="devices">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><rect x='3' y='4' width='18' height='12' rx='2'/><path d='M8 20h8M12 16v4'/></svg>"}Devices</div>
+<div class="item" data-panel="notifications">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M6 16V11a6 6 0 0 1 12 0v5l2 2H4Z'/><path d='M10 21h4'/></svg>"}Notifications</div>
+<div class="item" data-panel="ghost">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M5 21V11a7 7 0 0 1 14 0v10l-2.3-2-2.4 2-2.3-2-2.3 2-2.4-2Z'/><circle cx='9.5' cy='11' r='1'/><circle cx='14.5' cy='11' r='1'/></svg>"}Ghost pings</div>
 <div class="item" data-panel="messages">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><path d='M4 5h16v11H8l-4 4Z'/><path d='M8 9h8M8 12h5'/></svg>"}Message log</div>
 <div class="item" data-panel="account">${"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8'><circle cx='12' cy='8' r='4'/><path d='M4 21a8 8 0 0 1 16 0'/></svg>"}Account</div>
 <div style="border-top:1px solid var(--card-border);margin:10px 0"></div>
@@ -392,6 +411,7 @@ th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;
 <div class="kpi"><small>Cloud storage</small><strong id="k-size">…</strong></div>
 <div class="kpi"><small>Connected since</small><strong id="k-since">…</strong></div>
 </div>
+<div class="card" style="margin-bottom:14px"><h3>Last 30 days</h3><p style="font-size:.85rem">Messages sent per day, from the Statistics plugin.</p><div id="chart" style="display:flex;align-items:flex-end;gap:4px;height:120px"></div><div id="chart-labels" style="display:flex;justify-content:space-between;color:var(--muted);font-size:.72rem;margin-top:4px"></div></div>
 ${liveWidget()}
 </div>
 <div class="panel" id="panel-data">
@@ -405,6 +425,38 @@ ${liveWidget()}
 <p id="stats-note">Statistics are published by the SnoreClient app every few minutes while Cloud Integration is on.</p>
 <div class="kpis" id="stats-kpis"></div>
 <div class="card" id="stats-channels" style="display:none"><h3>Busiest channels</h3><div class="bars" id="stats-bars"></div></div>
+</div>
+<div class="panel" id="panel-controls">
+<div class="eyebrow">Remote controls</div><h2>Control your <span class="hl">client</span> from here</h2>
+<p>Changes are picked up by the SnoreClient app within two minutes. <span id="ctl-state" class="badge">…</span></p>
+<div class="card" style="margin-top:10px">
+<div class="vc-ctl"><div><b>Snore Discoverable</b><br><small>Show me in the Online now lists.</small></div><label class="sw"><input type="checkbox" id="ctl-discoverable"><span></span></label></div>
+<div class="vc-ctl"><div><b>Private Mode</b><br><small>Blur names, avatars and messages in the app.</small></div><label class="sw"><input type="checkbox" id="ctl-private"><span></span></label></div>
+<div class="vc-ctl"><div><b>Away Reply</b><br><small>Auto answer DMs while idle or on Do Not Disturb.</small></div><label class="sw"><input type="checkbox" id="ctl-away"><span></span></label></div>
+<div class="vc-ctl" style="flex-direction:column;align-items:stretch"><b>Away message</b><div class="row" style="margin:8px 0 0"><input type="search" id="ctl-away-msg" placeholder="I'm away right now…" style="flex:1;border-radius:12px"><a class="btn" id="ctl-away-save" href="#">Save</a></div></div>
+</div>
+</div>
+<div class="panel" id="panel-plugins">
+<div class="eyebrow">Plugins</div><h2>Plugin <span class="hl">manager</span></h2>
+<p id="pl-note">Toggle plugins from the web. The app applies changes within two minutes; plugins with patches need a Discord restart.</p>
+<div class="row" style="margin:10px 0"><input type="search" id="pl-search" placeholder="Search plugins…" style="max-width:420px"><span class="badge" id="pl-count"></span></div>
+<div id="pl-list" class="grid" style="grid-template-columns:1fr;gap:8px"><div class="card"><p>Loading…</p></div></div>
+</div>
+<div class="panel" id="panel-devices">
+<div class="eyebrow">Devices</div><h2>Where you're <span class="hl">signed in</span></h2>
+<p>Each client that syncs reports itself here.</p>
+<div id="dev-list" class="grid"><div class="card"><p>Loading…</p></div></div>
+<div class="card" style="margin-top:14px"><h3>Friends on SnoreClient online now</h3><div id="dev-online" class="chips"></div></div>
+</div>
+<div class="panel" id="panel-notifications">
+<div class="eyebrow">Notification center</div><h2>Everything that <span class="hl">happened</span></h2>
+<p id="nt-note">Mirrors the app's notification center: pings, keywords, friend changes, kicks, roles, and more.</p>
+<div id="nt-list" class="grid" style="grid-template-columns:1fr;gap:8px"><div class="card"><p>Loading…</p></div></div>
+</div>
+<div class="panel" id="panel-ghost">
+<div class="eyebrow">Ghost pings</div><h2>Who <span class="hl">ghost pinged</span> you</h2>
+<p id="gp-note">Logged by the GhostPingLog plugin.</p>
+<div class="card" style="padding:6px 0"><table><thead><tr><th>When</th><th>User</th><th>Where</th><th>How</th><th>Message</th></tr></thead><tbody id="gp-rows"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
 </div>
 <div class="panel" id="panel-messages">
 <div class="eyebrow">Message log</div><h2>Deleted &amp; <span class="hl">edited</span> messages</h2>
@@ -457,6 +509,65 @@ ${liveWidget()}
       $("stats-kpis").innerHTML = "<div class='kpi'><strong>–</strong><small>No statistics yet</small></div>";
     }
     renderLog();
+    renderPlugins();
+    renderDevices();
+    renderNotifications();
+    renderGhost();
+    renderChart();
+    renderControls();
+  }
+  function post(path, body) { return fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(r => r.json()); }
+  async function sendRemote(patch) {
+    $("ctl-state").textContent = "sending…";
+    const r = await post("/v1/me/remote", patch);
+    me.remote = r.remote;
+    $("ctl-state").textContent = "queued, the app applies it within 2 min";
+  }
+  function renderControls() {
+    const d = me.device || {}, r = me.remote || {};
+    const val = (k, dk) => (k in r ? r[k] : d[dk ?? k]);
+    $("ctl-discoverable").checked = !(val("ghostMode") ?? false);
+    $("ctl-private").checked = !!val("privateMode");
+    $("ctl-away").checked = !!val("awayReply");
+    $("ctl-away-msg").value = val("awayMessage") || "";
+    $("ctl-state").textContent = d.updatedAt ? "app last reported " + ago(d.updatedAt) : "waiting for the app to report in";
+  }
+  $("ctl-discoverable").addEventListener("change", e => sendRemote({ ghostMode: !e.target.checked }));
+  $("ctl-private").addEventListener("change", e => sendRemote({ privateMode: e.target.checked }));
+  $("ctl-away").addEventListener("change", e => sendRemote({ awayReply: e.target.checked }));
+  $("ctl-away-save").addEventListener("click", e => { e.preventDefault(); sendRemote({ awayMessage: $("ctl-away-msg").value }); });
+  function renderPlugins() {
+    const list = (me.device && me.device.plugins) || [];
+    const q = ($("pl-search").value || "").toLowerCase();
+    const pending = (me.remote && me.remote.plugins) || {};
+    const rows = list.filter(p => !q || (p.name + " " + p.description).toLowerCase().includes(q));
+    $("pl-count").textContent = list.filter(p => p.enabled).length + " on / " + list.length;
+    $("pl-list").innerHTML = rows.length ? rows.map(p => { const on = p.name in pending ? pending[p.name] : p.enabled; return "<div class='card pl'><div class='t'><b>" + esc(p.name) + "</b>" + (p.required ? " <span class='badge'>required</span>" : "") + (p.name in pending && pending[p.name] !== p.enabled ? " <span class='badge'>pending</span>" : "") + "<small>" + esc(p.description) + "</small></div>" + (p.required ? "" : "<label class='sw'><input type='checkbox' data-plugin='" + esc(p.name) + "'" + (on ? " checked" : "") + "><span></span></label>") + "</div>"; }).join("") : "<div class='card'><p>" + (list.length ? "No matches." : "The app hasn't reported its plugin list yet. Open Discord with Cloud Integration on.") + "</p></div>";
+    $("pl-list").querySelectorAll("input[data-plugin]").forEach(i => i.addEventListener("change", () => sendRemote({ plugins: { [i.dataset.plugin]: i.checked } })));
+  }
+  $("pl-search").addEventListener("input", renderPlugins);
+  function renderDevices() {
+    const d = me.device;
+    $("dev-list").innerHTML = d ? "<div class='card'><h3>" + esc(d.platform) + "</h3><p>" + esc(d.os || "") + "<br>v" + esc(d.version) + " · " + esc(d.hash) + " · " + esc(d.channel || "stable") + " channel<br>" + (d.plugins ? d.plugins.filter(p => p.enabled).length + " plugins on" : "") + "<br><span class='badge'><span class='dot' style='" + (me.online ? "" : "background:var(--muted);box-shadow:none") + "'></span>" + (me.online ? "online now" : "last seen " + ago(d.updatedAt)) + "</span></p></div>" : "<div class='card'><p>No device has reported yet.</p></div>";
+    const others = (me.onlineUsers || []).filter(u => u.id !== me.user.id);
+    $("dev-online").innerHTML = others.length ? others.map(u => "<span class='badge'><span class='dot'></span>" + esc(u.username) + "</span>").join("") : "<span class='badge'>nobody else online right now</span>";
+  }
+  function renderNotifications() {
+    const list = (me.notifications && me.notifications.entries) || [];
+    if (me.notifications && me.notifications.updatedAt) $("nt-note").textContent = "Last upload " + ago(me.notifications.updatedAt) + ".";
+    $("nt-list").innerHTML = list.length ? list.map(n => "<div class='card' style='padding:12px 16px;display:flex;gap:12px;align-items:center'><div style='width:36px;height:36px;border-radius:9px;flex-shrink:0;background:" + esc(n.color || "#5b8cff") + ";display:grid;place-items:center;overflow:hidden'>" + (n.icon ? "<img src='" + esc(n.icon) + "' style='width:36px;height:36px'>" : "<b>i</b>") + "</div><div style='flex:1;min-width:0'><i>" + esc((n.title || "").replace(/^SnoreClient \| /, "")) + (n.body ? " | " + esc(n.body) : "") + "</i><br><small style='color:var(--muted)'>" + ago(n.at) + "</small></div></div>").join("") : "<div class='card'><p>No notifications uploaded yet.</p></div>";
+  }
+  function renderGhost() {
+    const list = ((me.ghostPings && me.ghostPings.entries) || []).slice().reverse();
+    if (me.ghostPings && me.ghostPings.updatedAt) $("gp-note").textContent = "Last upload " + ago(me.ghostPings.updatedAt) + ". Logged by the GhostPingLog plugin.";
+    $("gp-rows").innerHTML = list.length ? list.map(g => "<tr><td>" + esc(fmtDate(g.at)) + "</td><td><b>" + esc(g.author) + "</b><br><small style='color:var(--muted)'>" + esc(g.authorId) + "</small></td><td>" + esc(g.guild) + " #" + esc(g.channel) + "</td><td>" + esc(g.how) + "</td><td>" + esc(g.content) + "</td></tr>").join("") : "<tr><td colspan='5'>No ghost pings logged. Enable the GhostPingLog plugin in the app.</td></tr>";
+  }
+  function renderChart() {
+    const daily = (me.stats && me.stats.daily) || {};
+    const days = []; for (let i = 29; i >= 0; i--) { const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10); days.push([d, daily[d] || { sent: 0, received: 0 }]); }
+    const max = Math.max(1, ...days.map(([, v]) => v.sent));
+    $("chart").innerHTML = days.map(([d, v]) => "<div class='bar-col' title='" + d + ": " + v.sent + " sent, " + v.received + " seen' style='height:" + Math.max(2, Math.round(v.sent / max * 100)) + "%'></div>").join("");
+    $("chart-labels").innerHTML = "<span>" + days[0][0].slice(5) + "</span><span>" + days[15][0].slice(5) + "</span><span>today</span>";
   }
   function renderLog() {
     const log = (me.messageLog && me.messageLog.entries) || [];

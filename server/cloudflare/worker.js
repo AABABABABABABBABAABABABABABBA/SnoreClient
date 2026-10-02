@@ -450,10 +450,16 @@ route("GET", "/v1/me", async ({ req, cfg, db, env }) => {
     };
     const stats = await readJsonKey("stats");
     const messageLog = await readJsonKey("messagelog");
+    const device = await readJsonKey("device");
+    const notifications = await readJsonKey("notifications");
+    const ghostPings = await readJsonKey("ghostpings");
+    const remote = await readJsonKey("remote");
     let online = false;
+    let onlineUsers = [];
     try {
         const snap = await (await hub(envRef).fetch("https://live/snapshot")).json();
         online = snap.online.some(u => u.id === user.id);
+        onlineUsers = snap.online;
     } catch { }
     return json({
         user: { id: user.id, username: user.username, global_name: profile?.global_name ?? null, avatar: profile?.avatar ?? null, created_at: user.created_at, last_seen_at: user.last_seen_at },
@@ -461,8 +467,39 @@ route("GET", "/v1/me", async ({ req, cfg, db, env }) => {
         legacy: v1 ? { written: v1.written, size: Math.round(Number(v1.size) * 0.75) } : null,
         stats,
         messageLog,
+        device,
+        notifications,
+        ghostPings,
+        remote,
         online,
+        onlineUsers,
     }, 200, { "Cache-Control": "no-store" });
+});
+
+// Dashboard writes commands here; the client pulls them within two minutes and applies them.
+route("POST", "/v1/me/remote", async ({ req, cfg, db }) => {
+    const user = await requireSession(req, cfg, db);
+    let body;
+    try { body = JSON.parse(new TextDecoder().decode(await readBody(req, 64 * 1024))); } catch { throw new HttpError(400, "Malformed JSON body"); }
+    const allowed = {};
+    for (const k of ["ghostMode", "privateMode", "awayReply"]) if (typeof body[k] === "boolean") allowed[k] = body[k];
+    if (typeof body.awayMessage === "string") allowed.awayMessage = body.awayMessage.slice(0, 500);
+    if (body.plugins && typeof body.plugins === "object") {
+        allowed.plugins = {};
+        for (const [name, on] of Object.entries(body.plugins)) if (/^[A-Za-z0-9]{1,64}$/.test(name) && typeof on === "boolean") allowed.plugins[name] = on;
+    }
+    const existingRow = await db.prepare("SELECT value FROM data_v2 WHERE user_id = ? AND key = 'remote'").bind(user.id).first();
+    let existing = {};
+    if (existingRow) { try { existing = JSON.parse(new TextDecoder().decode(b64.decode(existingRow.value))); } catch { } }
+    const merged = { ...existing, ...allowed, plugins: { ...(existing.plugins || {}), ...(allowed.plugins || {}) }, issuedAt: Date.now() };
+    const bytes = enc.encode(JSON.stringify(merged));
+    const checksum = (await sha256(bytes)).slice(0, 16);
+    const prev = await db.prepare("SELECT version FROM data_v2 WHERE user_id = ? AND key = 'remote'").bind(user.id).first();
+    await db.prepare(`
+        INSERT INTO data_v2 (user_id, key, version, checksum, value, updated_at) VALUES (?, 'remote', ?, ?, ?, ?)
+        ON CONFLICT(user_id, key) DO UPDATE SET version = excluded.version, checksum = excluded.checksum, value = excluded.value, updated_at = excluded.updated_at
+    `).bind(user.id, (prev?.version ?? 0) + 1, checksum, b64.encode(bytes), Date.now()).run();
+    return json({ ok: true, remote: merged });
 });
 
 route("POST", "/v1/me/delete", async ({ req, cfg, db }) => {

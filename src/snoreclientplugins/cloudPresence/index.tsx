@@ -5,15 +5,18 @@
  */
 
 import * as DataStore from "@api/DataStore";
-import { isPluginEnabled } from "@api/PluginManager";
+import { isPluginEnabled, startPlugin, stopPlugin } from "@api/PluginManager";
 import { definePluginSettings, Settings, SettingsStore } from "@api/Settings";
 import { getCloudAuth } from "@api/SettingsSync/cloudSetup";
-import { putCloudKey } from "@api/SettingsSync/cloudSync";
+import { onCloudKey, pullCloudKeys, putCloudKey } from "@api/SettingsSync/cloudSync";
+import { gitHashShort } from "@shared/vencordUserAgent";
 import { SnoreClientDevs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { Message } from "@vencord/discord-types";
 import { ChannelStore, GuildStore, MessageStore, useEffect, UserStore, useState } from "@webpack/common";
+
+import Plugins from "~plugins";
 
 const logger = new Logger("CloudPresence", "#a78bfa");
 
@@ -181,6 +184,77 @@ function onSettingChange(_: unknown, path: string) {
 }
 
 let publishTimer: ReturnType<typeof setInterval> | undefined;
+let remoteTimer: ReturnType<typeof setInterval> | undefined;
+let unregisterRemote: (() => void) | undefined;
+
+const platformName = () => IS_WEB ? (IS_EXTENSION ? "Browser extension" : IS_USERSCRIPT ? "Userscript" : "Web") : IS_EQUIBOP ? "Equibop" : IS_VESKTOP ? "Vesktop" : "Discord Desktop";
+
+async function publishDevice() {
+    if (!Settings.cloud.authenticated) return;
+    const plugins = Object.values(Plugins)
+        .filter(p => !p.name.endsWith("API"))
+        .map(p => ({ name: p.name, enabled: isPluginEnabled(p.name), required: !!p.required, description: p.description }));
+    await putCloudKey("device", {
+        platform: platformName(),
+        os: navigator.platform,
+        version: VERSION,
+        hash: gitHashShort,
+        channel: Settings.updateChannel,
+        ghostMode: settings.store.ghostMode,
+        privateMode: !!(isPluginEnabled("PrivateMode") && Settings.plugins.PrivateMode?.enabled),
+        awayReply: isPluginEnabled("AwayReply"),
+        awayMessage: Settings.plugins.AwayReply?.message ?? "",
+        plugins,
+        updatedAt: Date.now(),
+    }).catch(() => { });
+}
+
+async function publishNotifications() {
+    if (!Settings.cloud.authenticated) return;
+    const log = await DataStore.get<any[]>("notification-log") ?? [];
+    const recent = [...log].sort((a, b) => b.timestamp - a.timestamp).slice(0, 100)
+        .map(n => ({ id: n.id, title: n.title, body: n.body, color: n.color, icon: n.icon, at: n.timestamp }));
+    await putCloudKey("notifications", { entries: recent, updatedAt: Date.now() }).catch(() => { });
+}
+
+interface RemoteCommands {
+    issuedAt?: number;
+    ghostMode?: boolean;
+    privateMode?: boolean;
+    awayReply?: boolean;
+    awayMessage?: string;
+    plugins?: Record<string, boolean>;
+}
+
+let lastRemote = 0;
+
+function togglePlugin(name: string, enable: boolean) {
+    const plugin = Plugins[name];
+    if (!plugin || plugin.required || plugin.name.endsWith("API")) return;
+    const ps = Settings.plugins[name] ??= { enabled: false };
+    if (ps.enabled === enable) return;
+    ps.enabled = enable;
+    if (!plugin.patches?.length) (enable ? startPlugin : stopPlugin)(plugin);
+}
+
+async function applyRemote(value: unknown) {
+    const cmd = value as RemoteCommands;
+    if (!cmd || typeof cmd !== "object") return;
+    if ((cmd.issuedAt ?? 0) <= lastRemote) return;
+    lastRemote = cmd.issuedAt ?? Date.now();
+    logger.info("Applying remote commands from the dashboard", cmd);
+
+    if (typeof cmd.ghostMode === "boolean") settings.store.ghostMode = cmd.ghostMode;
+    if (typeof cmd.privateMode === "boolean") {
+        togglePlugin("PrivateMode", true);
+        (Settings.plugins.PrivateMode ??= { enabled: true }).enabled = cmd.privateMode;
+    }
+    if (typeof cmd.awayReply === "boolean") togglePlugin("AwayReply", cmd.awayReply);
+    if (typeof cmd.awayMessage === "string" && cmd.awayMessage.trim()) (Settings.plugins.AwayReply ??= { enabled: false }).message = cmd.awayMessage.slice(0, 500);
+    if (cmd.plugins) for (const [name, on] of Object.entries(cmd.plugins)) if (typeof on === "boolean") togglePlugin(name, on);
+
+    await publishDevice();
+}
 
 export default definePlugin({
     name: "CloudPresence",
@@ -209,11 +283,17 @@ export default definePlugin({
         messageLog = await DataStore.get<LoggedMessage[]>(LOG_KEY) ?? [];
         connect();
         SettingsStore.addGlobalChangeListener(onSettingChange);
-        publishTimer = setInterval(publishMessageLog, 5 * 60_000);
+        publishTimer = setInterval(() => { publishMessageLog(); publishDevice(); publishNotifications(); }, 5 * 60_000);
+        setTimeout(() => { publishDevice(); publishNotifications(); }, 20_000);
+        unregisterRemote = onCloudKey("remote", applyRemote);
+        remoteTimer = setInterval(() => pullCloudKeys().catch(() => { }), 2 * 60_000);
+        setTimeout(() => pullCloudKeys().catch(() => { }), 30_000);
     },
 
     stop() {
         clearInterval(publishTimer);
+        clearInterval(remoteTimer);
+        unregisterRemote?.();
         SettingsStore.removeGlobalChangeListener(onSettingChange);
         disconnect();
     },

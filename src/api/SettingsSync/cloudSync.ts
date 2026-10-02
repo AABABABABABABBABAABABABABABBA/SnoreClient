@@ -475,6 +475,37 @@ export async function putCloudKey(key: string, value: unknown) {
     return true;
 }
 
+type CloudKeyHandler = (value: unknown) => void | Promise<void>;
+const keyHandlers = new Map<string, CloudKeyHandler>();
+
+/** Register a handler for a cloud key written by the web dashboard (for example "remote"). */
+export function onCloudKey(key: string, handler: CloudKeyHandler) {
+    keyHandlers.set(key, handler);
+    return () => { keyHandlers.delete(key); };
+}
+
+/** Pull only the keys that have handlers, without touching settings sync. */
+export async function pullCloudKeys() {
+    if (!Settings.cloud.authenticated || keyHandlers.size === 0) return;
+    if (await getApiVersion() !== "v2") return;
+    const manifest = await getLocalManifest();
+    const response = await doSyncV2([], manifest);
+    if (!response) return;
+
+    const updated = new Map(manifest.map(e => [e.key, e]));
+    for (const dl of response.downloads) {
+        const handler = keyHandlers.get(dl.key);
+        if (!handler) continue;
+        try {
+            await handler(JSON.parse(new TextDecoder().decode(fromBase64(dl.value))));
+            updated.set(dl.key, { key: dl.key, version: dl.version, checksum: dl.checksum });
+        } catch (e) {
+            logger.error(`Cloud key handler for ${dl.key} failed`, e);
+        }
+    }
+    await saveLocalManifest([...updated.values()]);
+}
+
 export function shouldCloudSync(direction: "push" | "pull") {
     const localDirection = localStorage.Vencord_cloudSyncDirection;
     return localDirection === direction || localDirection === "both";
