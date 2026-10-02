@@ -12,7 +12,7 @@ import { sendMessage } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { Message, User } from "@vencord/discord-types";
-import { Menu, React, RestAPI, UserStore } from "@webpack/common";
+import { Menu, React, RestAPI, UserSettingsActionCreators, UserStore } from "@webpack/common";
 
 const logger = new Logger("AutoRespond");
 const STORE_KEY = "AutoRespond_users";
@@ -29,6 +29,15 @@ const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Send the GIF as a reply to their message instead of a plain message.",
         default: true,
+    },
+    source: {
+        type: OptionType.SELECT,
+        description: "Where the GIFs come from.",
+        options: [
+            { label: "My favorited GIFs that match their message, trending as fallback", value: "favorites-match", default: true },
+            { label: "Only my favorited GIFs (random)", value: "favorites" },
+            { label: "Tenor search for their message", value: "search" },
+        ],
     },
     useAi: {
         type: OptionType.BOOLEAN,
@@ -68,7 +77,52 @@ async function aiTerm(text: string) {
     }
 }
 
+interface FavoriteGif {
+    url: string;
+    src?: string;
+    format?: number;
+    width?: number;
+    height?: number;
+    order?: number;
+}
+
+function favoriteGifs(): FavoriteGif[] {
+    try {
+        const frecency = UserSettingsActionCreators.FrecencyUserSettingsActionCreators.getCurrentValue();
+        const gifs = frecency?.favoriteGifs?.gifs ?? {};
+        return Object.entries(gifs).map(([url, g]: [string, any]) => ({ url, ...g }));
+    } catch {
+        return [];
+    }
+}
+
+const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+
+/** Match a search term against the words in a favorite's URL (tenor slugs carry the gif's title). */
+function matchingFavorites(term: string, favs: FavoriteGif[]) {
+    const words = term.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    if (!words.length) return [];
+    return favs.filter(g => {
+        const hay = `${g.url} ${g.src ?? ""}`.toLowerCase().replace(/[^a-z0-9]+/g, " ");
+        return words.some(w => hay.includes(w));
+    });
+}
+
 async function findGif(term: string): Promise<string | null> {
+    const { source } = settings.store;
+    if (source !== "search") {
+        const favs = favoriteGifs();
+        if (favs.length) {
+            if (source === "favorites") return pick(favs).url;
+            const matched = matchingFavorites(term, favs);
+            if (matched.length) return pick(matched).url;
+        }
+        if (source === "favorites") return null;
+    }
+    return searchGif(term);
+}
+
+async function searchGif(term: string): Promise<string | null> {
     const search = await RestAPI.get({
         url: "/gifs/search",
         query: { q: term, media_format: "gif", provider: "tenor", limit: 20 },
