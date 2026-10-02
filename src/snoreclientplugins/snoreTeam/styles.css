@@ -1,0 +1,33 @@
+.vc-snore-team-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.vc-snore-team-role {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--snore-accent, #a78bfa) 45%, var(--border-subtle));
+    background: linear-gradient(135deg, color-mix(in srgb, var(--snore-accent, #a78bfa) 18%, transparent), transparent);
+}
+
+.vc-snore-team-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+}
+
+.vc-snore-team-contributions {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.vc-snore-team-contributions li::marker {
+    color: var(--snore-accent, #a78bfa);
+}

@@ -706,6 +706,10 @@ export const SnoreClientDevs = Object.freeze({
         name: "nobody",
         id: 0n
     },
+    founder: {
+        name: "mr.extreme1250",
+        id: 454986373623971840n
+    },
     thororen: {
         name: "thororen",
         id: 848339671629299742n
